@@ -45,3 +45,5 @@
 .tern-port
 /node_modules
 /bin/
+/.classpath
+/.project
