@@ -45,6 +45,9 @@ modules = {
         // heatmap
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/controllers', file: 'heatmap.js']
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/viz', file: 'd3Heatmap.js']
+		// phenotypeHeatmap
+        resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/controllers', file: 'phenotypeHeatmap.js']
+        resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/viz', file: 'd3PhenotypeHeatmap.js']
         // correlation
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/controllers', file: 'correlation.js']
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/viz', file: 'd3Correlation.js']
