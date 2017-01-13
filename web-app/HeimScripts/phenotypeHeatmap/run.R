@@ -136,52 +136,37 @@ main <- function(max_rows = 100, sorting = "nodes", ranking = "coef", selections
     ## hd.df = data.list$HD
     ##ld.list = data.list$LD    
     print(4)
-    muh <- buildLowDim(ld.list)
+    extraList <- buildLowDim(ld.list)
     print(777)
     saveRDS(muh, file="quak.rds")
     print(5)
     
-    ## We need to transform the LD-Data to match our needs.
-    ## Column 1: Row.Label (unique identifier)
-    ## Column 2: Categoric.Marker 1
-    ## Column 3-n: all Entries from Categoric Marker 2
-    ## All cells in the columns of 3-n:
-    ## Numeric Value for cross-over between categoric-marker 1 of row x and categoric-marker 2 of row y.
-    ## Numeric Value can be: AVG(numeric_value), MEAN(numeric_value), PAT_NUMBER()
+    categoricList <- subset(extraList, TYPE=="categoric")
+    tmpValue <- as.character(categoricList["PARENT"][1,1])
+    category1 <- subset(categoricList, PARENT==tmpValue)
+    category2 <- subset(categoricList, PARENT!=tmpValue)
+    numValues <- subset(extraList, TYPE=="numeric")
     
-    categoricLists <- grep("categoric", names(ld.list), value=TRUE)
+    category1Values <- as.character(unique(category1["VALUE"])[[1]])
+    category2Values <- as.character(unique(category2["VALUE"])[[1]])
     
-    lowDataDf <- data.frame(matrix(NA, ncol=1, nrow=length(ld.list[[categoricLists[1]]]$Row.Label)))
-    colnames(lowDataDf) <- c("Row.Label")
+    lowDataDf <- data.frame(matrix(ncol=1+nrow(category1Values), nrow=nrow(category2Values)))
+    colnames(lowDataDf) <- c("Row.Label", category1Values)
+    rownames(lowDataDf) <- category2Values
+    lowDataDf$Row.Label <- 1:length(category2Values)
     
-    lowDataDf$Row.Label <- ld.list[[categoricLists[1]]]$Row.Label
+    ## We now have the general structure. Now we need to apply the chosen method for calculating the z-score
     
-    ## FIRST CATEGORY
-    categoryName <- colnames(ld.list[[categoricLists[1]]])[2] 
-    firstCategory <- substring(categoryName, 0, regexpr("\\.[^\\.]*\\.[^\\.]*$", categoryName)[1])
+    ## For the moment: ignore all other methods and count patient-number...
     
-    i <- 1
-    firstCategoryItems <- vector('character')
-	for (list in ld.list) {
-    	if (grepl(firstCategory, names(list[2]))[1]) {
-    	    firstCategoryItems[[length(tmpList)+1]] = names(list[2])
-    	    i <- i+1
-  	  }	
-	}
-	
-	## SECOND CATEGORY
-	## We cannot use regex here: Race.Afro.American instead of Race.AfroAmerican ....
-    categoryName <- colnames(ld.list[[categoricLists[i]]])[2] 
-    secondCategory <- substring(categoryName, 0, regexpr("\\.[^\\.]*\\.[^\\.]*$", categoryName)[1])
     
-    secondCategoryItems <- vector('character')
-	for (list in ld.list) {
-    	if (grepl(secondCategory, names(list[2]))[1]) {
-    	    secondCategoryItems[[length(tmpList)+1]] = names(list[2])
-  	  }	
-	}
-	
-	
+    for (i in 1:length(category1Values)) {
+    for (j in 1:length(category2Values)) {
+    	lowDataDf[j,i+1] <- length(intersect(subset(categoricList, VALUE==category1Values[i])$PATIENTID,
+    									 	 subset(categoricList, VALUE==category2Values[j])$PATIENTID))
+    }
+    }
+    
     
     ## For the time being we only allow the nodes sorting method
     ## if (sorting == "nodes") {
@@ -195,7 +180,7 @@ main <- function(max_rows = 100, sorting = "nodes", ranking = "coef", selections
     ##}
     
     write.table(
-        ld.list,
+        lowDataDf,
         "phenotypeHeatmap_orig_values.tsv",
         sep = "\t",
         na = "",
@@ -238,28 +223,28 @@ main <- function(max_rows = 100, sorting = "nodes", ranking = "coef", selections
 
     
     ## rowNames reflect here the unique identifiers of the GEX matrix this means "probeID--geneSymbol"
-    rowNames        <- ld.list[, 1]
+    rowNames        <- lowDataDf[, 1]
     
     ## colNames should reflect here only the sample names (e.g. "67_Breast_s1")
-    colNames = colnames(ld.list)[grep("^\\d+_.+_s\\d$", colnames(ld.list), perl = TRUE)]
+    colNames = colnames(lowDataDf)[grep("^\\d+_.+_s\\d$", colnames(lowDataDf), perl = TRUE)]
 
 	## OINK OINK: We need to look at the data. "significane" aka z is the numeric val.
-    significanceValues <- ld.list[3][,1]
+    ## significanceValues <- lowDataDf[3][,1]
     
     
     ## A df containing the computed values for
     ## all possible statistical methods
-    statistics.df = getAllStatForExtDataFrame(ld.list)
+    ## statistics.df = getAllStatForExtDataFrame(lowDataDf)
 
-    write.table(statistics.df,
-                "phenotypeHeatmap_data.tsv",
-                sep = "\t",
-                na = "",
-                row.names = FALSE,
-                col.names = TRUE)
+    ## write.table(statistics.df,
+    ##            "phenotypeHeatmap_data.tsv",
+    ##            sep = "\t",
+    ##            na = "",
+    ##            row.names = FALSE,
+    ##            col.names = TRUE)
     ## Concatenating the two extraField types (that have been generated
     ## for the low and high dim data) 
-    extraFields.df = extraFieldsLowDim.df
+    ##extraFields.df = extraList
     
     
     ## The returned jsn object that will be dumped to file
@@ -269,7 +254,7 @@ main <- function(max_rows = 100, sorting = "nodes", ranking = "coef", selections
         "colNames"            = colNames,
         "rowNames"            = rowNames,
         "ranking"             = ranking,
-        "extraFields"         = extraFields.df,
+        "extraFields"         = extraList,
         "features"            = ldd_rownames.vector,
         "maxRows"             = max_rows,
         "allStatValues"       = statistics.df,
@@ -279,38 +264,38 @@ main <- function(max_rows = 100, sorting = "nodes", ranking = "coef", selections
     ## To keep track of the parameters selected for the execution of the code
     writeRunParams(max_rows, sorting, ranking)
     
-    # temporary stats like SD and MEAN need to be removed for clustering to work
-    measurements.df <- cleanUp(ld.list)  
+    ## temporary stats like SD and MEAN need to be removed for clustering to work
+    ## measurements.df <- cleanUp(ld.list)  
 
    
 
     ## discard rownames / probe id column
     ## in case of more samples
-    if (ncol(ld.list) > 10){
-        measurements.df <- measurements.df[, 2:ncol(measurements.df)]
-    } else {
-        ## if only one sample
-        colname = colnames(ld.list)[2] 
-        measurements.df <- data.frame(VALUES = ld.list[,2])
-        colnames(measurements.df) = colname
-        
-    }
+    ## if (ncol(ld.list) > 10){
+    ##    measurements.df <- measurements.df[, 2:ncol(measurements.df)]
+    ##} else {
+    ##    if only one sample
+    ##    colname = colnames(ld.list)[2] 
+    ##    measurements.df <- data.frame(VALUES = ld.list[,2])
+    ##    colnames(measurements.df) = colname
+    ##    
+    ##}
 
-    rownames(measurements.df) = as.vector(rowNames)
+    ##rownames(measurements.df) = as.vector(rowNames)
 
     
     ## GEX intensity matrix converted to zeta scores
     ## for clustering purposes
-    measurementsAsZscore.matrix <- toZscores(measurements.df)
+    ##measurementsAsZscore.matrix <- toZscores(measurements.df)
 
   
     
     ## If no significanceValues are available throw a warning:
-    if (all(is.na(significanceValues)))
-        jsn$warnings <- append(jsn$warnings, c("Significance sorting could not be done due to insufficient data"))
+    ## if (all(is.na(significanceValues)))
+    ##    jsn$warnings <- append(jsn$warnings, c("Significance sorting could not be done due to insufficient data"))
     
-    
-    jsn <- addClusteringOutput(jsn, measurementsAsZscore.matrix) 
+    ## OINK OINK
+    ##jsn <- addClusteringOutput(jsn, measurementsAsZscore.matrix) 
     
 
     
@@ -318,7 +303,7 @@ main <- function(max_rows = 100, sorting = "nodes", ranking = "coef", selections
     jsn <- toJSON(jsn, pretty = TRUE, digits = I(17))
     
     
-    write(jsn, file = "heatmap.json")
+    write(jsn, file = "phenotypeHeatmap.json")
     # json file be served the same way
     # like any other file would - get name via
     # /status call and then /download
