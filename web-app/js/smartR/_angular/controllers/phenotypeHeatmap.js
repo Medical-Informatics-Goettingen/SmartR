@@ -1,4 +1,4 @@
-//# sourceURL=heatmap.js
+//# sourceURL=phenotypeHeatmap.js
 
 'use strict';
 
@@ -36,7 +36,7 @@ window.smartRApp.controller('PhenotypeHeatmapController', [
                 max_row: 100,
                 sorting: 'nodes',
                 ranking: 'coef',
-                geneCardsAllowed: false,
+                geneCardsAllowed: false
             },
             download: {
                 disabled: true

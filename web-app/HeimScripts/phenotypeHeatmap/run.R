@@ -137,8 +137,6 @@ main <- function(max_rows = 100, sorting = "nodes", ranking = "coef", selections
     ##ld.list = data.list$LD    
     print(4)
     extraList <- buildLowDim(ld.list)
-    print(777)
-    saveRDS(muh, file="quak.rds")
     print(5)
     
     categoricList <- subset(extraList, TYPE=="categoric")
@@ -150,23 +148,36 @@ main <- function(max_rows = 100, sorting = "nodes", ranking = "coef", selections
     category1Values <- as.character(unique(category1["VALUE"])[[1]])
     category2Values <- as.character(unique(category2["VALUE"])[[1]])
     
-    lowDataDf <- data.frame(matrix(ncol=1+nrow(category1Values), nrow=nrow(category2Values)))
-    colnames(lowDataDf) <- c("Row.Label", category1Values)
-    rownames(lowDataDf) <- category2Values
-    lowDataDf$Row.Label <- 1:length(category2Values)
+    ##lowDataDf <- data.frame(matrix(ncol=1+length(category1Values), nrow=length(category2Values)))
+    ##colnames(lowDataDf) <- category1Values
+    ##rownames(lowDataDf) <- category2Values
+    ##lowDataDf$Row.Label <- 1:length(category2Values)
     
     ## We now have the general structure. Now we need to apply the chosen method for calculating the z-score
     
     ## For the moment: ignore all other methods and count patient-number...
     
-    
+	ROWNAME.vec = character()
+	COLNAME.vec = character()
+	VALUE.vec = numeric() 
+
     for (i in 1:length(category1Values)) {
     for (j in 1:length(category2Values)) {
-    	lowDataDf[j,i+1] <- length(intersect(subset(categoricList, VALUE==category1Values[i])$PATIENTID,
-    									 	 subset(categoricList, VALUE==category2Values[j])$PATIENTID))
+    	tmp <- length(intersect(subset(categoricList, VALUE==category1Values[i])$PATIENTID,
+								subset(categoricList, VALUE==category2Values[j])$PATIENTID))
+		ROWNAME.vec <- c(ROWNAME.vec, category1Values[i])
+		COLNAME.vec <- c(COLNAME.vec, category2Values[j])
+		VALUE.vec <- c(VALUE.vec, tmp)
     }
     }
-    
+     
+    fields <- data.frame(
+    	"ROWNAME" = ROWNAME.vec,
+		"COLNAME" = COLNAME.vec,
+		"VALUE" = VALUE.vec,
+		"ZSCORE" = (VALUE.vec - mean(VALUE.vec)) / sd(VALUE.vec),
+		"SUBSET" = 1
+	)
     
     ## For the time being we only allow the nodes sorting method
     ## if (sorting == "nodes") {
@@ -180,7 +191,7 @@ main <- function(max_rows = 100, sorting = "nodes", ranking = "coef", selections
     ##}
     
     write.table(
-        lowDataDf,
+        fields,
         "phenotypeHeatmap_orig_values.tsv",
         sep = "\t",
         na = "",
@@ -223,10 +234,10 @@ main <- function(max_rows = 100, sorting = "nodes", ranking = "coef", selections
 
     
     ## rowNames reflect here the unique identifiers of the GEX matrix this means "probeID--geneSymbol"
-    rowNames        <- lowDataDf[, 1]
+    ##rowNames        <- lowDataDf[, 1]
     
     ## colNames should reflect here only the sample names (e.g. "67_Breast_s1")
-    colNames = colnames(lowDataDf)[grep("^\\d+_.+_s\\d$", colnames(lowDataDf), perl = TRUE)]
+    ##colNames = colnames(lowDataDf)[grep("^\\d+_.+_s\\d$", colnames(lowDataDf), perl = TRUE)]
 
 	## OINK OINK: We need to look at the data. "significane" aka z is the numeric val.
     ## significanceValues <- lowDataDf[3][,1]
@@ -236,34 +247,34 @@ main <- function(max_rows = 100, sorting = "nodes", ranking = "coef", selections
     ## all possible statistical methods
     ## statistics.df = getAllStatForExtDataFrame(lowDataDf)
 
-    ## write.table(statistics.df,
-    ##            "phenotypeHeatmap_data.tsv",
-    ##            sep = "\t",
-    ##            na = "",
-    ##            row.names = FALSE,
-    ##            col.names = TRUE)
+    write.table(fields,
+                "phenotypeHeatmap_data.tsv",
+                sep = "\t",
+                na = "",
+                row.names = FALSE,
+                col.names = TRUE)
     ## Concatenating the two extraField types (that have been generated
     ## for the low and high dim data) 
     ##extraFields.df = extraList
     
-    
     ## The returned jsn object that will be dumped to file
     jsn <- list(
-        "fields"              = fields.df,
-        "patientIDs"          = getSubject(colNames),
-        "colNames"            = colNames,
-        "rowNames"            = rowNames,
+        "fields"              = fields,
+       ## "patientIDs"          = c("1","2","3","4"),  ## REMOVE
+        "colNames"            = category1Values,
+        "rowNames"            = category2Values,
         "ranking"             = ranking,
-        "extraFields"         = extraList,
-        "features"            = ldd_rownames.vector,
-        "maxRows"             = max_rows,
-        "allStatValues"       = statistics.df,
+      ##  "extraFields"         = extraList, ## REMOVE
+        "features"            = fields[2], ## REMOVE
+        "maxRows"             = max_rows, 
+      ##  "allStatValues"       = fields, ## ERSTMAL REMOVE
         "warnings"            = c() # initiate empty vector
     )
     
+    print("a")
     ## To keep track of the parameters selected for the execution of the code
     writeRunParams(max_rows, sorting, ranking)
-    
+    print("b")
     ## temporary stats like SD and MEAN need to be removed for clustering to work
     ## measurements.df <- cleanUp(ld.list)  
 
@@ -300,14 +311,15 @@ main <- function(max_rows = 100, sorting = "nodes", ranking = "coef", selections
 
     
     ## Transforming the output list to json format
+    print("c")
     jsn <- toJSON(jsn, pretty = TRUE, digits = I(17))
-    
+    print(8)
     
     write(jsn, file = "phenotypeHeatmap.json")
     # json file be served the same way
     # like any other file would - get name via
     # /status call and then /download
-
+	print(9)
     msgs <- c("Finished successfuly")
     list(messages = msgs)
 }
