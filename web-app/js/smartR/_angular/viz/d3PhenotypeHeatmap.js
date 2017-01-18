@@ -34,11 +34,9 @@ window.smartRApp.directive('phenotypeHeatmapPlot', [
 
         function createHeatmap(scope, root) {
             var ANIMATION_DURATION = 1500;
-
-            alert("QUAK");
-            
+      
             var fields = scope.data.fields;
-          //  var extraFields = scope.data.extraFields;
+            var extraFields = scope.data.extraFields;
             var features = [];
 
             var colNames = scope.data.colNames; // unique
@@ -58,12 +56,14 @@ window.smartRApp.directive('phenotypeHeatmapPlot', [
             var originalRowNames = rowNames.slice();
 
             var ranking = scope.data.ranking[0].toUpperCase();
-            //var statistics = scope.data.allStatValues;
+            var statistics = scope.data.allStatValues;
 
-            //var geneCardsAllowed = JSON.parse(scope.params.geneCardsAllowed);
-
-            var gridFieldWidth = 20;
-            var gridFieldHeight = 10;
+            var geneCardsAllowed = JSON.parse(scope.params.geneCardsAllowed);
+            var sortingMethod = scope.params.sorting;
+            var numericName = "Median(" + scope.data.numericName + ")";
+            
+            var gridFieldWidth = 40;
+            var gridFieldHeight = 20;
             var dendrogramHeight = 300;
             var histogramHeight = 200;
             var legendWidth = 200;
@@ -139,28 +139,28 @@ window.smartRApp.directive('phenotypeHeatmapPlot', [
             while (rankingSelect.firstChild) {
                 rankingSelect.removeChild(rankingSelect.firstChild);
             }
-            //for (var stat in statistics[0]) { // collect existing statistics headers
-            //    if (statistics[0].hasOwnProperty(stat) && stat !== 'ROWNAME') {
-            //        var option = document.createElement('option');
-            //        if (ranking === stat) {
-            //            option.selected = true;
-            //        }
-            //        option.setAttribute('value', stat);
-            //        option.innerHTML = stat.toLowerCase();
-            //        rankingSelect.appendChild(option);
-            //    }
-            //}
+            for (var stat in statistics[0]) { // collect existing statistics headers
+                if (statistics[0].hasOwnProperty(stat) && stat !== 'ROWNAME') {
+                    var option = document.createElement('option');
+                    if (ranking === stat) {
+                        option.selected = true;
+                    }
+                    option.setAttribute('value', stat);
+                    option.innerHTML = stat.toLowerCase();
+                    rankingSelect.appendChild(option);
+                }
+            }
 
-            //function setScales() {
-            //    scale = d3.scale.linear()
-            //        .domain(d3.extent(statistics.map(function(d) { return d[ranking]; })))
-            //        .range((ranking === 'PVAL' || ranking === 'ADJPVAL') ? [histogramHeight, 0] : [0, histogramHeight]);
+            function setScales() {
+                scale = d3.scale.linear()
+                    .domain(d3.extent(statistics.map(function(d) { return d[ranking]; })))
+                    .range((ranking === 'PVAL' || ranking === 'ADJPVAL') ? [histogramHeight, 0] : [0, histogramHeight]);
 
-            //    histogramScale = function(value) {
-            //        return (ranking === 'TTEST' || ranking === 'LOGFOLD') ? scale(Math.abs(value)) : scale(value);
-            //    };
-            //}
-            //setScales();
+                histogramScale = function(value) {
+                    return (ranking === 'TTEST' || ranking === 'LOGFOLD') ? scale(Math.abs(value)) : scale(value);
+                };
+            }
+            setScales();
 
             function getInternalSortValue(value) {
                 switch (ranking) {
@@ -197,6 +197,7 @@ window.smartRApp.directive('phenotypeHeatmapPlot', [
                 .html(function(d) { return d; });
 
             heatmap.call(tip);
+          
 
             var featureItems = heatmap.append('g');
             var squareItems = heatmap.append('g');
@@ -239,12 +240,20 @@ window.smartRApp.directive('phenotypeHeatmapPlot', [
                         d3.select('.rowname.rowname-' + smartRUtils.makeSafeForCSS(d.ROWNAME))
                             .classed('highlight', true);
 
-                        var html = 'Log2: ' + d.VALUE + '<br/>' +
-                            'z-Score: ' + d.ZSCORE + '<br/>' +
+                        var html = "";
+                        if (sortingMethod == "patientnumbers") {
+                        	html = 'Patientcount (Sorting Value): ' + d.VALUE + '<br/>' +
+                        			numericName + ' (Numeric Value): ' + d.OTHERVALUE + '<br/>';
+                        } else {
+                        	html = numericName + ' (Sorting Value): ' + d.VALUE + '<br/>' +
+                			'Patientcount: ' + d.OTHERVALUE + '<br/>';
+                        }
+                        
+                        var html = html + 'z-Score: ' + d.ZSCORE + '<br/>' +
                             'Column: ' + d.COLNAME + '<br/>' +
-                            'Row: ' + d.ROWNAME + '<br/>' +
+                            'Row: ' + d.ROWNAME + '<br/>';
                             //'PatientId: ' + d.PATIENTID + '</br>' +
-                            'Subset: ' + d.SUBSET + '<br/>';
+                            //'Subset: ' + d.SUBSET + '<br/>';
 
                         tip.show(html);
                     })
@@ -506,15 +515,15 @@ window.smartRApp.directive('phenotypeHeatmapPlot', [
                         var genes = d.split('--');
                         genes.shift();
                         var urls = [];
-                        //if (geneCardsAllowed) {
-                        //    genes.forEach(function(gene) {
-                        //        urls.push('http://www.genecards.org/cgi-bin/carddisp.pl?gene=' + gene);
-                        //    });
-                        //} else {
+                        if (geneCardsAllowed) {
+                            genes.forEach(function(gene) {
+                                urls.push('http://www.genecards.org/cgi-bin/carddisp.pl?gene=' + gene);
+                            });
+                        } else {
                             genes.forEach(function(gene) {
                                 urls.push('https://www.ebi.ac.uk/ebisearch/search.ebi?db=allebi&query=' + gene);
                             });
-                        //}
+                        }
                         urls.forEach(function(url) {
                             window.open(url);
                         });
@@ -525,7 +534,7 @@ window.smartRApp.directive('phenotypeHeatmapPlot', [
                     .style('font-size', gridFieldHeight + 'px')
                     .attr('x', width + gridFieldWidth + 7)
                     .attr('y', function(d) { return rowNames.indexOf(d) * gridFieldHeight + 0.5 * gridFieldHeight; });
-//HERE
+                
                 var bar = barItems.selectAll('.bar')
                     .data(statistics, function(d) { return d.ROWNAME; });
 
@@ -576,7 +585,7 @@ window.smartRApp.directive('phenotypeHeatmapPlot', [
                         var html = 'Value: ' + d.VALUE + '<br/>' +
                             (d.ZSCORE ? 'z-Score: ' + d.ZSCORE + '<br/>' : '') +
                             'Row: ' + d.ROWNAME + '<br/>' +
-                            'PatientId: ' + d.PATIENTID + '<br/>' +
+                            //'PatientId: ' + d.PATIENTID + '<br/>' +
                             'Type: ' + d.TYPE + '<br/>' +
                             'Subset: ' + d.SUBSET;
 
@@ -688,11 +697,11 @@ window.smartRApp.directive('phenotypeHeatmapPlot', [
                 d3.selectAll('.sr-heatmap-table').remove();
 
                 var HEADER = ['ROWNAME'];
-                //for (var stat in statistics[0]) { // collect existing statistics headers
-                //    if (statistics[0].hasOwnProperty(stat) && stat !== 'ROWNAME') {
-                //        HEADER.push(stat);
-                //    }
-                //}
+                for (var stat in statistics[0]) { // collect existing statistics headers
+                    if (statistics[0].hasOwnProperty(stat) && stat !== 'ROWNAME') {
+                        HEADER.push(stat);
+                    }
+                }
                 var table = d3.select(root).append('table')
                     .attr('class', 'sr-heatmap-table');
                 var thead = table.append('thead');
@@ -714,22 +723,22 @@ window.smartRApp.directive('phenotypeHeatmapPlot', [
                     entities.push(rowName);
                 });
 
-                //var rows = tbody.selectAll('tr')
-                //    .data(statistics)
-                //    .enter()
-                //    .append('tr');
+                var rows = tbody.selectAll('tr')
+                    .data(statistics)
+                    .enter()
+                    .append('tr');
 
-                //rows.selectAll('td')
-                //    .data(function(d, i) {
-                //        return HEADER.map(function(column) {
-                //            return {column: column, value: statistics[i][column]};
-                //        });
-                //    })
-                //    .enter()
-                //    .append('td')
-                //    .text(function(d) {
-                //        return d.value;
-                //    });
+                rows.selectAll('td')
+                    .data(function(d, i) {
+                        return HEADER.map(function(column) {
+                            return {column: column, value: statistics[i][column]};
+                        });
+                    })
+                    .enter()
+                    .append('td')
+                    .text(function(d) {
+                        return d.value;
+                    });
             }
 
             function zoom(zoomLevel) {

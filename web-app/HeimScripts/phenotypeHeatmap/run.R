@@ -122,22 +122,27 @@ buildLowDim <- function(ld.list) {
   return(res.df)
 }
 
+## Check input args for heatmap run.R script
+verifyInput <- function(max_rows, sorting) {
+  if (max_rows <= 0) {
+    stop("Max rows argument needs to be higher than zero.")
+  }
+  if (!(sorting == "patientnumbers" || sorting == "numericvalue")) {
+    stop("Unsupported sorting type. Only nodes and subjects are allowed")
+  }
+}
 
-main <- function(max_rows = 100, sorting = "nodes", ranking = "coef", selections = list(), geneCardsAllowed = FALSE) {
-    print(0)
+main <- function(max_rows = 100, sorting = "patientnumbers", ranking = "mean", selections = list(), geneCardsAllowed = FALSE) {
     max_rows <- as.numeric(max_rows)
-    print(1)
-    verifyInputHeatmap(max_rows, sorting)
-    print(2)
+    verifyInput(max_rows, sorting)
+    
     ## Returns a list containing two variables named HD and LD
     ld.list <- parseInputLd()
-    print(3)
-    ## Splitting up input into low dim and high dim vars 
-    ## hd.df = data.list$HD
-    ##ld.list = data.list$LD    
-    print(4)
     extraList <- buildLowDim(ld.list)
-    print(5)
+    
+    ##DBG
+    print(sorting)
+    print(ranking)
     
     categoricList <- subset(extraList, TYPE=="categoric")
     tmpValue <- as.character(categoricList["PARENT"][1,1])
@@ -148,26 +153,33 @@ main <- function(max_rows = 100, sorting = "nodes", ranking = "coef", selections
     category1Values <- as.character(unique(category1["VALUE"])[[1]])
     category2Values <- as.character(unique(category2["VALUE"])[[1]])
     
-    ##lowDataDf <- data.frame(matrix(ncol=1+length(category1Values), nrow=length(category2Values)))
-    ##colnames(lowDataDf) <- category1Values
-    ##rownames(lowDataDf) <- category2Values
-    ##lowDataDf$Row.Label <- 1:length(category2Values)
-    
-    ## We now have the general structure. Now we need to apply the chosen method for calculating the z-score
-    
     ## For the moment: ignore all other methods and count patient-number...
     
 	ROWNAME.vec = character()
 	COLNAME.vec = character()
-	VALUE.vec = numeric() 
+	VALUE.vec = numeric()
+	OTHERVALUE.vec = numeric()
 
     for (i in 1:length(category1Values)) {
     for (j in 1:length(category2Values)) {
-    	tmp <- length(intersect(subset(categoricList, VALUE==category1Values[i])$PATIENTID,
-								subset(categoricList, VALUE==category2Values[j])$PATIENTID))
+    	tmp.matchedPatients <- intersect(subset(categoricList, VALUE==category1Values[i])$PATIENTID,
+								subset(categoricList, VALUE==category2Values[j])$PATIENTID)
+    	tmp.patientNumber <- length(tmp.matchedPatients)
+    	tmp.numericMedian <- median(as.numeric(numValues[numValues$PATIENTID %in% tmp.matchedPatients, ]$VALUE))
+    	
 		ROWNAME.vec <- c(ROWNAME.vec, category1Values[i])
 		COLNAME.vec <- c(COLNAME.vec, category2Values[j])
-		VALUE.vec <- c(VALUE.vec, tmp)
+		
+		if (sorting == "patientnumbers") {
+			VALUE.vec <- c(VALUE.vec, tmp.patientNumber)
+			OTHERVALUE.vec <- c(OTHERVALUE.vec, tmp.numericMedian)
+		} else {
+			VALUE.vec <- c(VALUE.vec, tmp.numericMedian)
+			OTHERVALUE.vec <- c(OTHERVALUE.vec, tmp.patientNumber)
+		}
+		
+		VALUE.vec[is.na(VALUE.vec)] <- 0
+		OTHERVALUE.vec[is.na(OTHERVALUE.vec)] <- 0
     }
     }
      
@@ -175,20 +187,10 @@ main <- function(max_rows = 100, sorting = "nodes", ranking = "coef", selections
     	"ROWNAME" = ROWNAME.vec,
 		"COLNAME" = COLNAME.vec,
 		"VALUE" = VALUE.vec,
+		"OTHERVALUE" = OTHERVALUE.vec,
 		"ZSCORE" = (VALUE.vec - mean(VALUE.vec)) / sd(VALUE.vec),
 		"SUBSET" = 1
 	)
-    
-    ## For the time being we only allow the nodes sorting method
-    ## if (sorting == "nodes") {
-	##
- 	##   } else {
- 	##      colNames <- colnames(ld.list[, -c(1,2)])
-  	##     subjects <- as.numeric(sub("_.+", "", colNames))
-    ##    subsets <- as.numeric(substring(colNames, first=nchar(colNames), last=nchar(colNames)))
-    ##   ordering <- order(as.numeric(paste(subjects, subsets, sep="")))
-    ##  ld.list <- cbind(ld.list[, c(1,2)], ld.list[, -c(1,2)][, ordering])
-    ##}
     
     write.table(
         fields,
@@ -199,75 +201,62 @@ main <- function(max_rows = 100, sorting = "nodes", ranking = "coef", selections
         col.names = TRUE
     )
     
-    ## Creating the extended diff expr analysis data frame containing besides the input data,
-    ## a set of statistics. The returned data frame is ranked according to provided ranking statistic
-    ## hd.df          <- addStats(hd.df, ranking, max_rows)
-    
-    ## hd.df          <- mergeDuplicates(hd.df)
-    
-    ## Filtering down the hd.df to retain only the n top ranked rows
-    ## ld.list          <- ld.list[1:min(max_rows, nrow(ld.list)), ]  
-    
-    ## if (!is.null(selections$selectedRownames) && length(selections$selectedRownames > 0)) {
-    ##    ld.list <- ld.list[!ld.list$ROWNAME %in% selections$selectedRownames, ]
-    ## }
-    
-    ## High dimensional value data frame with unpivoted data structure
-    ## Providing intensity values and zscore for given patient, sample id/colname,
-    ## probe id/rowname and subset
-    ## fields.df      <- buildFields(hd.df)
-    
-
-    
-    ## High dimensional annotation data frame with unpivoted data structure
-    ## providing the information on which sample/colnames belongs to which cohort
-    ## extraFieldsHighDim.df <- buildExtraFieldsHighDim(fields.df)
-
-    
-    ## Low dimensional annotation data frame  OINK OINK
-    ## extraFieldsLowDim.df = buildExtraFieldsLowDim(ld.list, extraFieldsHighDim.df$COLNAME)
-    
-
-    ## ldd_rownames.vector = as.vector(unique(extraFieldsLowDim.df[, "ROWNAME"]))
-    ## ldd_rownames.vector = c("Cohort", ldd_rownames.vector)
-    
-
-    
-    ## rowNames reflect here the unique identifiers of the GEX matrix this means "probeID--geneSymbol"
-    ##rowNames        <- lowDataDf[, 1]
-    
-    ## colNames should reflect here only the sample names (e.g. "67_Breast_s1")
-    ##colNames = colnames(lowDataDf)[grep("^\\d+_.+_s\\d$", colnames(lowDataDf), perl = TRUE)]
-
-	## OINK OINK: We need to look at the data. "significane" aka z is the numeric val.
-    ## significanceValues <- lowDataDf[3][,1]
-    
-    
-    ## A df containing the computed values for
-    ## all possible statistical methods
-    ## statistics.df = getAllStatForExtDataFrame(lowDataDf)
-
-    write.table(fields,
+   write.table(fields,
                 "phenotypeHeatmap_data.tsv",
                 sep = "\t",
                 na = "",
                 row.names = FALSE,
                 col.names = TRUE)
-    ## Concatenating the two extraField types (that have been generated
-    ## for the low and high dim data) 
-    ##extraFields.df = extraList
+    
+    COEF.vec <- numeric()
+   	VAR.vec <- numeric()
+   	RANGE.vec <- numeric()
+   	MEAN.vec <- numeric()
+   	MEDIAN.vec <- numeric()
+    
+    print(fields)
+    
+    for (i in 1:length(category1Values)) {
+    	categoryValues <- subset(fields, ROWNAME==category1Values[i])$VALUE
+    	
+    	VAR.vec <- c(VAR.vec, var(categoryValues))
+    	RANGE.vec <- c(RANGE.vec, diff(range(categoryValues)))
+    	MEDIAN.vec <- c(MEDIAN.vec, median(categoryValues))
+    	
+    	tmp.mean <- mean(categoryValues)
+    	tmp.sd <- sd(categoryValues)
+    	tmp.coef <- if(tmp.mean == 0) tmp.sd/0.0001 else tmp.sd/tmp.mean
+    	
+    	MEAN.vec <- c(MEAN.vec, tmp.mean)
+    	COEF.vec <- c(COEF.vec, tmp.coef)	
+    }
+    
+    statValues <- data.frame(
+    	"ROWNAME"= category1Values,
+    	"COEF"=COEF.vec,
+    	"VARIANCE"=VAR.vec,
+    	"RANGE"=RANGE.vec,
+    	"MEAN"=MEAN.vec,
+    	"MEDIAN"=MEDIAN.vec
+    )
+    
+    ## Get name of the numeric value
+    tmp.numericName <- as.character(numValues$ROWNAME[1])
+	tmp.namePos <- regexpr("//", tmp.numericName)[1]
+	tmp.numericName <- substring(tmp.numericName, tmp.namePos+2)
     
     ## The returned jsn object that will be dumped to file
     jsn <- list(
         "fields"              = fields,
        ## "patientIDs"          = c("1","2","3","4"),  ## REMOVE
-        "colNames"            = category1Values,
-        "rowNames"            = category2Values,
+        "colNames"            = category2Values,
+        "rowNames"            = category1Values,
         "ranking"             = ranking,
-      ##  "extraFields"         = extraList, ## REMOVE
-        "features"            = fields[2], ## REMOVE
-        "maxRows"             = max_rows, 
-      ##  "allStatValues"       = fields, ## ERSTMAL REMOVE
+        "extraFields"         = list(), ## PLACEHOLDER
+        "features"            = list(), ## PLACEHOLDER
+        "maxRows"             = 100, ## PLACEHOLDER
+        "allStatValues"       = statValues, ## PLACEHOLDER
+        "numericName"		  = tmp.numericName,
         "warnings"            = c() # initiate empty vector
     )
     
@@ -275,41 +264,7 @@ main <- function(max_rows = 100, sorting = "nodes", ranking = "coef", selections
     ## To keep track of the parameters selected for the execution of the code
     writeRunParams(max_rows, sorting, ranking)
     print("b")
-    ## temporary stats like SD and MEAN need to be removed for clustering to work
-    ## measurements.df <- cleanUp(ld.list)  
-
-   
-
-    ## discard rownames / probe id column
-    ## in case of more samples
-    ## if (ncol(ld.list) > 10){
-    ##    measurements.df <- measurements.df[, 2:ncol(measurements.df)]
-    ##} else {
-    ##    if only one sample
-    ##    colname = colnames(ld.list)[2] 
-    ##    measurements.df <- data.frame(VALUES = ld.list[,2])
-    ##    colnames(measurements.df) = colname
-    ##    
-    ##}
-
-    ##rownames(measurements.df) = as.vector(rowNames)
-
-    
-    ## GEX intensity matrix converted to zeta scores
-    ## for clustering purposes
-    ##measurementsAsZscore.matrix <- toZscores(measurements.df)
-
   
-    
-    ## If no significanceValues are available throw a warning:
-    ## if (all(is.na(significanceValues)))
-    ##    jsn$warnings <- append(jsn$warnings, c("Significance sorting could not be done due to insufficient data"))
-    
-    ## OINK OINK
-    ##jsn <- addClusteringOutput(jsn, measurementsAsZscore.matrix) 
-    
-
-    
     ## Transforming the output list to json format
     print("c")
     jsn <- toJSON(jsn, pretty = TRUE, digits = I(17))
@@ -323,12 +278,4 @@ main <- function(max_rows = 100, sorting = "nodes", ranking = "coef", selections
     msgs <- c("Finished successfuly")
     list(messages = msgs)
 }
-
-
-
-
-## SE: For debug purposes
-#out = main(ranking = "median")
-
-
 

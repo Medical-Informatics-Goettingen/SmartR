@@ -47,35 +47,15 @@
 
             %{--Type of sorting to apply--}%
             <div class="heim-input-field sr-input-area">
-                <h2>Group columns by:</h2>
+                <h2>Used value:</h2>
                 <fieldset class="heim-radiogroup">
                     <label>
-                        <input type="radio" ng-model="runAnalysis.params.sorting" name="sortingSelect" value="nodes"
-                               checked> Node Order
+                        <input type="radio" ng-model="runAnalysis.params.sorting" name="sortingSelect" value="patientnumbers"
+                               checked> Patient Numbers
                     </label>
                     <label>
-                        <input type="radio" ng-model="runAnalysis.params.sorting" name="sortingSelect" value="subjects">
-                        Subject ID
-                    </label>
-                </fieldset>
-            </div>
-
-            <div class="heim-input-field sr-input-area">
-                <h2>I have read and accept the <a href=http://www.lifemapsc.com/genecards-suite-terms-of-use/ target="_blank">
-                    GeneCards TOU</a>
-                </h2>
-                <fieldset class="heim-radiogroup">
-                    <label>
-                        <input type="radio"
-                               ng-model="runAnalysis.params.geneCardsAllowed"
-                               name="geneCardsAllowedSelect"
-                               ng-value="true"> yes (use GeneCards)
-                    </label>
-                    <label>
-                        <input type="radio"
-                               ng-model="runAnalysis.params.geneCardsAllowed"
-                               name="geneCardsAllowedSelect"
-                               ng-value="false" checked> no (use EMBL EBI)
+                        <input type="radio" ng-model="runAnalysis.params.sorting" name="sortingSelect" value="numericvalue">
+                        Fetched Numeric Value
                     </label>
                 </fieldset>
             </div>
