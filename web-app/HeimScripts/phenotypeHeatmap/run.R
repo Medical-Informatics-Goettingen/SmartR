@@ -34,13 +34,18 @@ parseInputLd<- function() {
   if (exists("preprocessed")) {
     
     ## Retrieving low and high dim data into separate vars
+    saveRDS(preprocessed, file="meh.RDS")
     ld = preprocessed$LD
+    saveRDS(ld, file="muh.RDS")
     
   } else {
     
     ld_var.idx = grep("^(categoric)|(numeric)", names(loaded_variables), perl = TRUE)
   
     ## Either there is low dim data available ...
+    
+    saveRDS(loaded_variables, file="ih.RDS")
+    
     if(length(ld_var.idx)>0){
       ld = loaded_variables[ld_var.idx]
     ## ... or not
@@ -143,6 +148,7 @@ main <- function(max_rows = 100, sorting = "patientnumbers", ranking = "mean", s
     ##DBG
     print(sorting)
     print(ranking)
+    print(ld.list)
     
     categoricList <- subset(extraList, TYPE=="categoric")
     tmpValue <- as.character(categoricList["PARENT"][1,1])
@@ -152,9 +158,7 @@ main <- function(max_rows = 100, sorting = "patientnumbers", ranking = "mean", s
     
     category1Values <- as.character(unique(category1["VALUE"])[[1]])
     category2Values <- as.character(unique(category2["VALUE"])[[1]])
-    
-    ## For the moment: ignore all other methods and count patient-number...
-    
+
 	ROWNAME.vec = character()
 	COLNAME.vec = character()
 	VALUE.vec = numeric()
@@ -213,9 +217,7 @@ main <- function(max_rows = 100, sorting = "patientnumbers", ranking = "mean", s
    	RANGE.vec <- numeric()
    	MEAN.vec <- numeric()
    	MEDIAN.vec <- numeric()
-    
-    print(fields)
-    
+
     for (i in 1:length(category1Values)) {
     	categoryValues <- subset(fields, ROWNAME==category1Values[i])$VALUE
     	
@@ -259,22 +261,18 @@ main <- function(max_rows = 100, sorting = "patientnumbers", ranking = "mean", s
         "numericName"		  = tmp.numericName,
         "warnings"            = c() # initiate empty vector
     )
-    
-    print("a")
+
     ## To keep track of the parameters selected for the execution of the code
     writeRunParams(max_rows, sorting, ranking)
-    print("b")
   
     ## Transforming the output list to json format
-    print("c")
     jsn <- toJSON(jsn, pretty = TRUE, digits = I(17))
-    print(8)
     
     write(jsn, file = "phenotypeHeatmap.json")
     # json file be served the same way
     # like any other file would - get name via
     # /status call and then /download
-	print(9)
+
     msgs <- c("Finished successfuly")
     list(messages = msgs)
 }

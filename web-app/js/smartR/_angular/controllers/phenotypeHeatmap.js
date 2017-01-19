@@ -19,7 +19,8 @@ window.smartRApp.controller('PhenotypeHeatmapController', [
             loaded: false,
             conceptBoxes: {
                 numeric: {concepts: [], valid: false},
-                categoric: {concepts: [], valid: false}
+                categoric: {concepts: [], valid: false},
+                categoric2: {concepts: [], valid: false}
             }
         };
 

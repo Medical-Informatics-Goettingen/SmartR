@@ -6,22 +6,31 @@
         %{-- Fetch Data --}%
         %{--========================================================================================================--}%
         <workflow-tab tab-name="Fetch Data" disabled="fetch.disabled">
-           <concept-box
-                concept-group="fetch.conceptBoxes.numeric"
-                type="LD-numerical"
-                min="1"
-                max="1"
-                label="Numerical Variables (Select one)"
-                tooltip="Select ONE numeric data node from the data tree and drag it into the box.">
-            </concept-box>
-
             <concept-box
                 concept-group="fetch.conceptBoxes.categoric"
                 type="LD-categorical"
-                min="2"
+                min="1"
                 max="40"
-                label="Categoric Variables (Use two different categories)"
-                tooltip="Select at least two categoric data nodes from the data tree and drag it into the box. Make sure to insert data nodes from exactly TWO data folders.">
+                label="Categoric Row Variable"
+                tooltip="Insert any amount of concepts from ONE category in here. The row variables will be used to calculate the significane values.">
+            </concept-box>
+
+			<concept-box
+                concept-group="fetch.conceptBoxes.categoric2"
+                type="LD-categorical"
+                min="1"
+                max="40"
+                label="Categoric Column Variable"
+                tooltip="Insert any amount of concept from ONE category in here. Do not use the same category as used for the Categoric Row Variable.">
+            </concept-box>
+
+			<concept-box
+                concept-group="fetch.conceptBoxes.numeric"
+                type="LD-numerical"
+                min="0"
+                max="1"
+                label="Numerical Variables (optional)"
+                tooltip="Select one numerical variable if you want to use this variable instead of the patient count for sorting.">
             </concept-box>
 
             <hr class="sr-divider">
