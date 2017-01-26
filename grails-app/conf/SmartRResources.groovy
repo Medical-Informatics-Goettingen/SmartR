@@ -20,6 +20,7 @@ modules = {
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular', file: 'smartRApp.js']
         // directives
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/directives', file: 'conceptBox.js']
+		resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/directives', file: 'choiceConceptBoxMiGoe.js']
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/directives', file: 'tabContainer.js']
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/directives', file: 'workflowTab.js']
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/directives', file: 'fetchButton.js']

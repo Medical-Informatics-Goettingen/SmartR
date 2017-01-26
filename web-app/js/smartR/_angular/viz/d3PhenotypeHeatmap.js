@@ -853,6 +853,22 @@ window.smartRApp.directive('phenotypeHeatmapPlot', [
                         }
                         return colorSet.reverse();
                     }());
+                
+                var yellowBlueScale = d3.scale.quantile()
+                .domain([0, 1])
+                .range(function() {
+                    var colorSet = [];
+                    var NUM = 100;
+                    var i = NUM;
+                    while (i--) {
+                        colorSet.push(d3.rgb((255 * i) / NUM, (255 * i) / NUM, 0));
+                    }
+                    i = NUM;
+                    while (i--) {
+                        colorSet.push(d3.rgb(0, 0, (255 * (NUM - i)) / NUM));
+                    }
+                    return colorSet.reverse();
+                }());
 
                 var blueScale = d3.scale.linear()
                     .domain([0, 1])
@@ -866,7 +882,8 @@ window.smartRApp.directive('phenotypeHeatmapPlot', [
                     redGreen: redGreenScale,
                     blueScale: blueScale,
                     redBlue: redBlueScale,
-                    greenScale: greenScale
+                    greenScale: greenScale,
+                    yellowBlue: yellowBlueScale
                 };
 
                 colorScale = colorSchemas[schema];

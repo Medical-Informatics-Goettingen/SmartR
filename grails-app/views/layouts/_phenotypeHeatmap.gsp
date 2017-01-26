@@ -6,30 +6,43 @@
         %{-- Fetch Data --}%
         %{--========================================================================================================--}%
         <workflow-tab tab-name="Fetch Data" disabled="fetch.disabled">
-            <concept-box
+            
+			    
+			<choice-concept-box-mi-goe
                 concept-group="fetch.conceptBoxes.categoric"
-                type="LD-categorical"
-                min="1"
-                max="40"
-                label="Categoric Row Variable"
+                type1="LD-categorical"
+				type2="LD-numerical"
+                min1="1"
+                max1="40"
+				min2="1"
+				max2="1"
+            	choice1="Categoric"
+				choice2="Binned Numeric"
+                label="Categoric Row Value"
                 tooltip="Insert any amount of concepts from ONE category in here. The row variables will be used to calculate the significane values.">
-            </concept-box>
+			</choice-concept-box-mi-goe>
 
-			<concept-box
+			
+			<choice-concept-box-mi-goe
                 concept-group="fetch.conceptBoxes.categoric2"
-                type="LD-categorical"
-                min="1"
-                max="40"
+                type1="LD-categorical"
+				type2="LD-numerical"
+                min1="1"
+                max1="40"
+				min2="1"
+				max2="1"
+            	choice1="Categoric"
+				choice2="Binned Numeric"
                 label="Categoric Column Variable"
                 tooltip="Insert any amount of concept from ONE category in here. Do not use the same category as used for the Categoric Row Variable.">
-            </concept-box>
+            </choice-concept-box-mi-goe>
 
 			<concept-box
                 concept-group="fetch.conceptBoxes.numeric"
                 type="LD-numerical"
                 min="0"
                 max="1"
-                label="Numerical Variables (optional)"
+                label="Numerical Variable (optional)"
                 tooltip="Select one numerical variable if you want to use this variable instead of the patient count for sorting.">
             </concept-box>
 
@@ -59,8 +72,8 @@
                 <h2>Used value:</h2>
                 <fieldset class="heim-radiogroup">
                     <label>
-                        <input type="radio" ng-model="runAnalysis.params.sorting" name="sortingSelect" value="patientnumbers"
-                               checked> Patient Numbers
+                        <input type="radio" ng-model="runAnalysis.params.sorting" name="sortingSelect" value="patientnumbers" checked="checked">
+						Patient Numbers
                     </label>
                     <label>
                         <input type="radio" ng-model="runAnalysis.params.sorting" name="sortingSelect" value="numericvalue">

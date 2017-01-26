@@ -124,3 +124,14 @@
     float: right;
 }
 
+.heim-choicegroup-mi-goe {
+	display: inline;
+	border: none;
+}
+
+.heim-input-field .heim-choicegroup-mi-goe label {
+	display: inline-table;
+	padding-left: 10px;
+	width: 0em;
+}
+

@@ -40,7 +40,7 @@ parseInputLd<- function() {
     
   } else {
     
-    ld_var.idx = grep("^(categoric)|(numeric)", names(loaded_variables), perl = TRUE)
+    ld_var.idx = grep("^(categoric)|(categoric2)|(numeric)", names(loaded_variables), perl = TRUE)
   
     ## Either there is low dim data available ...
     
@@ -150,10 +150,10 @@ main <- function(max_rows = 100, sorting = "patientnumbers", ranking = "mean", s
     print(ranking)
     print(ld.list)
     
-    categoricList <- subset(extraList, TYPE=="categoric")
-    tmpValue <- as.character(categoricList["PARENT"][1,1])
-    category1 <- subset(categoricList, PARENT==tmpValue)
-    category2 <- subset(categoricList, PARENT!=tmpValue)
+    ##categoricList <- subset(extraList, TYPE=="categoric")
+    ##tmpValue <- as.character(categoricList["PARENT"][1,1])
+    category1 <- subset(extraList, TYPE=="categoric")
+    category2 <- subset(extraList, TYPE=="categoric2")
     numValues <- subset(extraList, TYPE=="numeric")
     
     category1Values <- as.character(unique(category1["VALUE"])[[1]])
@@ -166,8 +166,8 @@ main <- function(max_rows = 100, sorting = "patientnumbers", ranking = "mean", s
 
     for (i in 1:length(category1Values)) {
     for (j in 1:length(category2Values)) {
-    	tmp.matchedPatients <- intersect(subset(categoricList, VALUE==category1Values[i])$PATIENTID,
-								subset(categoricList, VALUE==category2Values[j])$PATIENTID)
+    	tmp.matchedPatients <- intersect(subset(category1, VALUE==category1Values[i])$PATIENTID,
+								subset(category2, VALUE==category2Values[j])$PATIENTID)
     	tmp.patientNumber <- length(tmp.matchedPatients)
     	tmp.numericMedian <- median(as.numeric(numValues[numValues$PATIENTID %in% tmp.matchedPatients, ]$VALUE))
     	
@@ -242,6 +242,16 @@ main <- function(max_rows = 100, sorting = "patientnumbers", ranking = "mean", s
     	"MEDIAN"=MEDIAN.vec
     )
     
+    ## Get measurements values for every field
+    measurements <- matrix(nrow=length(category1Values), ncol=length(category2Values))
+    for (i in 1:length(category1Values)) {
+    	for (j in 1:length(category2Values)) {
+    		measurements[i,j] = fields$ZSCORE[(i-1)*j + j]
+    	}
+    }
+    colnames(measurements) <- category2Values
+    rownames(measurements) <- category1Values
+    
     ## Get name of the numeric value
     tmp.numericName <- as.character(numValues$ROWNAME[1])
 	tmp.namePos <- regexpr("//", tmp.numericName)[1]
@@ -261,6 +271,11 @@ main <- function(max_rows = 100, sorting = "patientnumbers", ranking = "mean", s
         "numericName"		  = tmp.numericName,
         "warnings"            = c() # initiate empty vector
     )
+    
+    
+    
+    saveRDS(fields, file="TEST.RDS")
+    jsn <- addClusteringOutput(jsn, measurements) 
 
     ## To keep track of the parameters selected for the execution of the code
     writeRunParams(max_rows, sorting, ranking)
