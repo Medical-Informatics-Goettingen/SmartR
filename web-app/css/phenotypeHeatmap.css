@@ -135,3 +135,30 @@
 	width: 0em;
 }
 
+.sliderContainerMiGoe {
+	display: none;
+}
+
+.choiceConceptBoxDescMiGoe {
+	display: inline;
+}
+
+.choiceConceptBoxSliderMiGoe {
+	display: inline-flex;
+	margin-right: 10px;
+	margin-left: 10px;
+	width: 50%;
+}
+
+.sliderContainerMiGoe span.ui-spinner {
+	display: inline-flex;
+	width: 15%;
+}
+
+.choiceConceptBoxSliderMiGoe .ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus {
+	background: #f4fcf3 url(images/ui-bg_highlight-hard_60_f4fcf3_1x100.png) 50% 50% repeat-x;
+}
+
+.noSliderContainerMiGoe {
+	margin-bottom: 21.2px;
+}

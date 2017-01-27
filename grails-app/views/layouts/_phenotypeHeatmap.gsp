@@ -9,7 +9,8 @@
             
 			    
 			<choice-concept-box-mi-goe
-                concept-group="fetch.conceptBoxes.categoric"
+                concept-group="fetch.conceptBoxes.row"
+				identification="RowBox"
                 type1="LD-categorical"
 				type2="LD-numerical"
                 min1="1"
@@ -24,7 +25,8 @@
 
 			
 			<choice-concept-box-mi-goe
-                concept-group="fetch.conceptBoxes.categoric2"
+                concept-group="fetch.conceptBoxes.column"
+				identification="ColumnBox"
                 type1="LD-categorical"
 				type2="LD-numerical"
                 min1="1"
