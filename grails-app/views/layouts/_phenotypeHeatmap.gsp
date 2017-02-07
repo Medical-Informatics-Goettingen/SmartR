@@ -74,7 +74,7 @@
                 <h2>Used value:</h2>
                 <fieldset class="heim-radiogroup">
                     <label>
-                        <input type="radio" ng-model="runAnalysis.params.sorting" name="sortingSelect" value="patientnumbers" checked="checked">
+                        <input type="radio" ng-model="runAnalysis.params.sorting" name="sortingSelect" value="patientnumbers" ng-checked="true">
 						Patient Numbers
                     </label>
                     <label>

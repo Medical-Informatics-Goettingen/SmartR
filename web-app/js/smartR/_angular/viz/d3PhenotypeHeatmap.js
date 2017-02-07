@@ -58,7 +58,7 @@ window.smartRApp.directive('phenotypeHeatmapPlot', [
             var ranking = scope.data.ranking[0].toUpperCase();
             var statistics = scope.data.allStatValues;
 
-            var geneCardsAllowed = JSON.parse(scope.params.geneCardsAllowed);
+            //var geneCardsAllowed = JSON.parse(scope.params.geneCardsAllowed);
             var sortingMethod = scope.params.sorting;
             var numericName = "Median(" + scope.data.numericName + ")";
             
@@ -510,8 +510,8 @@ window.smartRApp.directive('phenotypeHeatmapPlot', [
                     .attr('class', function(d) { return 'rowname rowname-' + smartRUtils.makeSafeForCSS(d); })
                     .attr('dy', '0.35em')
                     .style('text-anchor', 'start')
-                    .text(function(d) { return d; })
-                    .on('click', function(d) {
+                    .text(function(d) { return d; });
+                    /*.on('click', function(d) {
                         var genes = d.split('--');
                         genes.shift();
                         var urls = [];
@@ -527,7 +527,7 @@ window.smartRApp.directive('phenotypeHeatmapPlot', [
                         urls.forEach(function(url) {
                             window.open(url);
                         });
-                    });
+                    });*/
 
                 rowName.transition()
                     .duration(animationCheck.checked ? ANIMATION_DURATION : 0)
@@ -979,7 +979,7 @@ window.smartRApp.directive('phenotypeHeatmapPlot', [
             function createColDendrogram() {
                 var w = 200;
                 var colDendrogramWidth = gridFieldWidth * colNames.length;
-                var spacing = gridFieldWidth * 2 + longestColNameLength + features.length * gridFieldHeight - 20;
+                var spacing = gridFieldWidth * 2 + longestColNameLength * 1.2 + features.length * gridFieldHeight - 20;
 
                 var cluster = d3.layout.cluster()
                     .size([colDendrogramWidth, w])
@@ -1031,7 +1031,7 @@ window.smartRApp.directive('phenotypeHeatmapPlot', [
             function createRowDendrogram() {
                 var h = 280;
                 var rowDendrogramHeight = gridFieldHeight * rowNames.length;
-                var spacing = gridFieldWidth + longestRowNameLength + 20;
+                var spacing = gridFieldWidth + longestRowNameLength * 1.5 + 20;
 
                 var cluster = d3.layout.cluster()
                     .size([rowDendrogramHeight, h])
@@ -1060,7 +1060,8 @@ window.smartRApp.directive('phenotypeHeatmapPlot', [
                     .attr('r', 4.5)
                     .attr('transform', function(d) {
                         return 'translate(' + (width + spacing + h - d.y) + ',' + d.x + ')';
-                    }).on('click', function(d) {
+                    })
+                    /*.on('click', function(d) {
                         var leafs = d.index.split(' ');
                         var genes = [];
                         leafs.forEach(function(leaf) {
@@ -1089,7 +1090,7 @@ window.smartRApp.directive('phenotypeHeatmapPlot', [
                             },
                             function(response) { alert("Error:", response); }
                         );
-                    })
+                    })*/
                     .on('mouseover', function(d) {
                         tip.show('Height: ' + d.height);
                     })

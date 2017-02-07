@@ -11,12 +11,17 @@
     </label>
     </fieldset>
     <div class="sliderContainerMiGoe">
-	<span class=".choiceConceptBoxDescMiGoe">Step-size:</span>
-	<div class="choiceConceptBoxSliderMiGoe"></div>
-	<input class="choiceSliderValueMiGoe" value="10.0"></div>
+	<span class="choiceConceptBoxDescMiGoe">Start:</span>
+	<input class="choiceStartValueMiGoe" value="0"></input>
+	<span class="choiceConceptBoxDescMiGoe">End:</span>
+	<input class="choiceEndValueMiGoe" value="100"></input>
+	<span class="choiceConceptBoxDescMiGoe">Step:</span>
+	<input class="choiceStepValueMiGoe" value="10"></input>
+	<input type="checkbox" ng-model="fetchData.procentualBinned" value="procentualBinned" class="sr-procentualBinned-mi-goe">Percentages</input>
+	</div>
 	<div class="noSliderContainerMiGoe"></div>
-    <span ng-show="instructionMinNodes" class="sr-instruction">Drag at least {{min1}} node(s) into the box<br /></span>
-    <span ng-show="instructionMaxNodes" class="sr-instruction">Select at most {{max1}} node(s)<br /></span>
+    <span ng-show="instructionMinNodes" class="sr-instruction instructionMinNodes">Drag at least {{min1}} node(s) into the box<br /></span>
+    <span ng-show="instructionMaxNodes" class="sr-instruction instructionMaxNodes">Select at most {{max1}} node(s)<br /></span>
     <span ng-show="instructionNodeType" class="sr-instruction">Node(s) do not have the correct type<br /></span>
     <span ng-show="instructionNodePlatform" class="sr-instruction">Nodes must have the same platform</span>
     <div class="sr-drop-input" ng-class="{true:'sr-drop-input-valid', false:'sr-drop-input-invalid'}[conceptGroup.valid]"

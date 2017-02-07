@@ -35,9 +35,22 @@ window.smartRApp.controller('PhenotypeHeatmapController', [
                     selectedRownames: [],
                 },
                 max_row: 100,
-                sorting: 'nodes',
-                ranking: 'coef',
-                geneCardsAllowed: false
+                sorting: 'patientnumbers',
+                ranking: 'mean',
+                binnedRow: {
+                	active: false,
+                	procentual: false,
+                    start: 0,
+                    end: 100,
+                    step: 10
+                },
+                binnedColumn: {
+                	active: false,
+                	procentual: false,
+                    start: 0,
+                    end: 100,
+                    step: 10
+                }
             },
             download: {
                 disabled: true
@@ -70,6 +83,12 @@ window.smartRApp.controller('PhenotypeHeatmapController', [
             $scope.runAnalysis.download.disabled = runAnalysisRunning ||
                 $.isEmptyObject($scope.runAnalysis.scriptResults);
 
+            // load binning parameters from fetching phase to runAnalysis.params
+            if (!fetchRunning) {
+            	$scope.runAnalysis.params.binnedRow = $scope.fetch.conceptBoxes.row.binning;
+            	$scope.runAnalysis.params.binnedColumn = $scope.fetch.conceptBoxes.column.binning;
+            }
+            
             // set ranking criteria
             if (!fetchRunning &&
                 $scope.common.totalSamples < 2 &&
@@ -78,7 +97,7 @@ window.smartRApp.controller('PhenotypeHeatmapController', [
             } else if (!fetchRunning &&
                        $scope.common.subsets < 2 &&
                        $scope.runAnalysis.params.ranking === '') {
-                $scope.runAnalysis.params.ranking = 'coef';
+                $scope.runAnalysis.params.ranking = 'mean';
             } else if (!fetchRunning &&
                        $scope.common.subsets > 1 &&
                        $scope.runAnalysis.params.ranking === '') {

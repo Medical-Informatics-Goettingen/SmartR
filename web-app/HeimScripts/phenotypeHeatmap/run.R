@@ -1,6 +1,7 @@
 library(reshape2)
 library(limma)
 library(jsonlite)
+library(gtools)
 
 
 if (!exists("remoteScriptDir")) {  #  Needed for unit-tests
@@ -34,17 +35,13 @@ parseInputLd<- function() {
   if (exists("preprocessed")) {
     
     ## Retrieving low and high dim data into separate vars
-    saveRDS(preprocessed, file="meh.RDS")
     ld = preprocessed$LD
-    saveRDS(ld, file="muh.RDS")
-    
+   
   } else {
     
-    ld_var.idx = grep("^(categoric)|(categoric2)|(numeric)", names(loaded_variables), perl = TRUE)
+    ld_var.idx = grep("^(column)|(row)|(numeric)", names(loaded_variables), perl = TRUE)
   
     ## Either there is low dim data available ...
-    
-    saveRDS(loaded_variables, file="ih.RDS")
     
     if(length(ld_var.idx)>0){
       ld = loaded_variables[ld_var.idx]
@@ -71,14 +68,13 @@ buildLowDim <- function(ld.list) {
   ##ld.subsets <- as.integer(sub("^.*_s", "", ld.names))
   ld.types <- sub("_.*$", "", ld.names)
 
-  PARENT.vec = character(length = 0)
   ROWNAME.vec = character(length = 0)
   PATIENTID.vec = character(length = 0)  
   VALUE.vec = character(length = 0)
   ##COLNAME.vec = character(length = 0)
   TYPE.vec = character(length = 0)
   ##SUBSET.vec = character(length = 0)
-  ZSCORE.vec = character(length = 0)
+  ##ZSCORE.vec = character(length = 0)
 
   for (i in 1:length(ld.names)) {
       ld.var <- ld.list[[i]]
@@ -92,8 +88,6 @@ buildLowDim <- function(ld.list) {
           ##ld.colname <- paste(ld.patientID, ld.rowname.tmp, paste("s", ld.subset, sep=""), sep="_")
           ld.rowname <- ld.rowname.tmp
           ROWNAME.vec <- c(ROWNAME.vec, ld.rowname)
-          tmpParentPos <- regexpr("//", ld.rowname)[1]
-          PARENT.vec <- c(PARENT.vec, substring(ld.rowname, 1, tmpParentPos-1))
           PATIENTID.vec <- c(PATIENTID.vec, ld.patientID)
           VALUE.vec <- c(VALUE.vec, ld.value)
           ##COLNAME.vec <- c(COLNAME.vec, ld.colname)
@@ -105,24 +99,23 @@ buildLowDim <- function(ld.list) {
 
   res.df = data.frame(PATIENTID = as.integer(PATIENTID.vec),
                       ##COLNAME = COLNAME.vec,
-                      PARENT = PARENT.vec,
                       ROWNAME = ROWNAME.vec,
                       VALUE = VALUE.vec,
-                      ZSCORE = rep(NA, length(PATIENTID.vec)),
+                      ##ZSCORE = rep(NA, length(PATIENTID.vec)),
                       TYPE = TYPE.vec
                       ##SUBSET = as.integer(SUBSET.vec), stringsAsFactors=FALSE
                       )
 
   # z-score computation must be executed on both cohorts, hence it happens after all the data are in res.df
-  rownames <- unique(res.df$ROWNAME)
-  for (rowname in rownames) {
-      sub.res.df <- res.df[res.df$ROWNAME == rowname, ]
-      if (sub.res.df[1,]$TYPE == "numeric") {
-          values <- as.numeric(sub.res.df$VALUE)
-          ZSCORE.values <- (values - mean(values)) / sd(values)
-          res.df[res.df$ROWNAME == rowname, ]$ZSCORE <- ZSCORE.values
-      }
-  }
+  ##rownames <- unique(res.df$ROWNAME)
+  ##for (rowname in rownames) {
+  ##    sub.res.df <- res.df[res.df$ROWNAME == rowname, ]
+  ##    if (sub.res.df[1,]$TYPE == "numeric") {
+  ##        values <- as.numeric(sub.res.df$VALUE)
+  ##        ZSCORE.values <- (values - mean(values)) / sd(values)
+  ##        res.df[res.df$ROWNAME == rowname, ]$ZSCORE <- ZSCORE.values
+  ##    }
+  ##}
 
   return(res.df)
 }
@@ -137,42 +130,85 @@ verifyInput <- function(max_rows, sorting) {
   }
 }
 
-main <- function(max_rows = 100, sorting = "patientnumbers", ranking = "mean", selections = list(), geneCardsAllowed = FALSE) {
+binCategory <- function(category, binObject) {
+	if (binObject$active) {
+		category$VALUE <- as.numeric(category$VALUE)
+		category$ROWNAME <- as.character(category$ROWNAME)
+		start <- binObject$start
+		end <- binObject$end
+		stepSize <- binObject$step
+		values <- category$VALUE
+		
+		rowname <- category$ROWNAME[1]
+		namePos <- regexpr("//", rowname)
+		nameStartIdx <- namePos[length(namePos)]
+		rowname <- substr(rowname, nameStartIdx+2, nchar(rowname))
+		
+		if (start > end) {
+			temp <- end
+			end <- start
+			start <- temp
+		}
+		
+		if (binObject$procentual) {
+			if (start < 0 || start > 100) start <- 0
+			if (end < 0 || end > 100) end <- 100
+			
+			saveRDS(category, file="BUH.RDS")
+			
+			minVal <- min(category$VALUE)
+			maxVal <- max(category$VALUE)
+			percentStep <- diff(range(minVal, maxVal))/100 * stepSize
+			steps <- seq(minVal, maxVal, percentStep)
+			idx <- 0
+			for (step in steps) {
+				categoryName <- paste(rowname, " [", idx, "% - ", idx+stepSize, "%)", sep="")
+				tryCatch({category[values >= step & values < step+percentStep,]$VALUE <- categoryName},
+				error=function(e){print(paste("In value range",step,"to",step+percentStep,"no value was present."))})
+				idx = idx + stepSize;
+			}	
+		} else {
+			steps <- seq(start, end, stepSize)
+			for (step in steps) {
+				categoryName <- paste(rowname, " [", step, " - ", step+stepSize, ")", sep="")
+				tryCatch({category[values >= step & values < step+stepSize,]$VALUE <- categoryName},
+				error=function(e){print("In one value range, no value was present.")})
+			}
+		}
+	}
+	return(category)
+}
+
+main <- function(max_rows = 100, sorting = "patientnumbers", ranking = "mean", selections = list(), binnedRow = {}, binnedColumn = {}) {
     max_rows <- as.numeric(max_rows)
+    if (sorting == "") sorting = "patientnumbers"
     verifyInput(max_rows, sorting)
     
     ## Returns a list containing two variables named HD and LD
     ld.list <- parseInputLd()
     extraList <- buildLowDim(ld.list)
     
-    ##DBG
-    print(sorting)
-    print(ranking)
-    print(ld.list)
-    
-    ##categoricList <- subset(extraList, TYPE=="categoric")
-    ##tmpValue <- as.character(categoricList["PARENT"][1,1])
-    category1 <- subset(extraList, TYPE=="categoric")
-    category2 <- subset(extraList, TYPE=="categoric2")
+    column <- binCategory(subset(extraList, TYPE=="column"), binnedColumn)
+    row <- binCategory(subset(extraList, TYPE=="row"), binnedRow)
     numValues <- subset(extraList, TYPE=="numeric")
     
-    category1Values <- as.character(unique(category1["VALUE"])[[1]])
-    category2Values <- as.character(unique(category2["VALUE"])[[1]])
+    columnValues <- mixedsort(as.character(unique(column["VALUE"])[[1]]))
+    rowValues <- mixedsort(as.character(unique(row["VALUE"])[[1]]))
 
 	ROWNAME.vec = character()
 	COLNAME.vec = character()
 	VALUE.vec = numeric()
 	OTHERVALUE.vec = numeric()
 
-    for (i in 1:length(category1Values)) {
-    for (j in 1:length(category2Values)) {
-    	tmp.matchedPatients <- intersect(subset(category1, VALUE==category1Values[i])$PATIENTID,
-								subset(category2, VALUE==category2Values[j])$PATIENTID)
+    for (i in 1:length(rowValues)) {
+    for (j in 1:length(columnValues)) {
+    	tmp.matchedPatients <- intersect(subset(row, VALUE==rowValues[i])$PATIENTID,
+								subset(column, VALUE==columnValues[j])$PATIENTID)
     	tmp.patientNumber <- length(tmp.matchedPatients)
     	tmp.numericMedian <- median(as.numeric(numValues[numValues$PATIENTID %in% tmp.matchedPatients, ]$VALUE))
     	
-		ROWNAME.vec <- c(ROWNAME.vec, category1Values[i])
-		COLNAME.vec <- c(COLNAME.vec, category2Values[j])
+		ROWNAME.vec <- c(ROWNAME.vec, rowValues[i])
+		COLNAME.vec <- c(COLNAME.vec, columnValues[j])
 		
 		if (sorting == "patientnumbers") {
 			VALUE.vec <- c(VALUE.vec, tmp.patientNumber)
@@ -196,14 +232,14 @@ main <- function(max_rows = 100, sorting = "patientnumbers", ranking = "mean", s
 		"SUBSET" = 1
 	)
     
-    write.table(
-        fields,
-        "phenotypeHeatmap_orig_values.tsv",
-        sep = "\t",
-        na = "",
-        row.names = FALSE,
-        col.names = TRUE
-    )
+##    write.table(
+##        fields,
+##        "phenotypeHeatmap_orig_values.tsv",
+##        sep = "\t",
+##        na = "",
+##        row.names = FALSE,
+##        col.names = TRUE
+##    )
     
    write.table(fields,
                 "phenotypeHeatmap_data.tsv",
@@ -218,8 +254,8 @@ main <- function(max_rows = 100, sorting = "patientnumbers", ranking = "mean", s
    	MEAN.vec <- numeric()
    	MEDIAN.vec <- numeric()
 
-    for (i in 1:length(category1Values)) {
-    	categoryValues <- subset(fields, ROWNAME==category1Values[i])$VALUE
+    for (i in 1:length(rowValues)) {
+    	categoryValues <- subset(fields, ROWNAME==rowValues[i])$VALUE
     	
     	VAR.vec <- c(VAR.vec, var(categoryValues))
     	RANGE.vec <- c(RANGE.vec, diff(range(categoryValues)))
@@ -234,7 +270,7 @@ main <- function(max_rows = 100, sorting = "patientnumbers", ranking = "mean", s
     }
     
     statValues <- data.frame(
-    	"ROWNAME"= category1Values,
+    	"ROWNAME"= rowValues,
     	"COEF"=COEF.vec,
     	"VARIANCE"=VAR.vec,
     	"RANGE"=RANGE.vec,
@@ -243,14 +279,14 @@ main <- function(max_rows = 100, sorting = "patientnumbers", ranking = "mean", s
     )
     
     ## Get measurements values for every field
-    measurements <- matrix(nrow=length(category1Values), ncol=length(category2Values))
-    for (i in 1:length(category1Values)) {
-    	for (j in 1:length(category2Values)) {
+    measurements <- matrix(nrow=length(rowValues), ncol=length(columnValues))
+    for (i in 1:length(rowValues)) {
+    	for (j in 1:length(columnValues)) {
     		measurements[i,j] = fields$ZSCORE[(i-1)*j + j]
     	}
     }
-    colnames(measurements) <- category2Values
-    rownames(measurements) <- category1Values
+    colnames(measurements) <- columnValues
+    rownames(measurements) <- rowValues
     
     ## Get name of the numeric value
     tmp.numericName <- as.character(numValues$ROWNAME[1])
@@ -261,8 +297,8 @@ main <- function(max_rows = 100, sorting = "patientnumbers", ranking = "mean", s
     jsn <- list(
         "fields"              = fields,
        ## "patientIDs"          = c("1","2","3","4"),  ## REMOVE
-        "colNames"            = category2Values,
-        "rowNames"            = category1Values,
+        "colNames"            = columnValues,
+        "rowNames"            = rowValues,
         "ranking"             = ranking,
         "extraFields"         = list(), ## PLACEHOLDER
         "features"            = list(), ## PLACEHOLDER

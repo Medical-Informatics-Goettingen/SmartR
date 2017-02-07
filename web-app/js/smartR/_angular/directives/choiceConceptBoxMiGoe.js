@@ -7,20 +7,6 @@ window.smartRApp.directive('choiceConceptBoxMiGoe', [
     '$http',
     function($rootScope, $http) {
     	
-    	$.widget("ui.suffixSpinner", $.ui.spinner, {
-    		_format: function(value) {
-    			var suffix = this.options.suffix;
-    			return value+" "+suffix;
-    		},
-			_parse: function(value) {
-				return parseFloat(value);
-			}
-    	});
-    	
-    	$rootScope.radioBtChange = function(value) {
-    		alert(value);
-    	}
-    	
         return {
             restrict: 'E',
             scope: {
@@ -49,34 +35,46 @@ window.smartRApp.directive('choiceConceptBoxMiGoe', [
                     template_tooltip = element[0].querySelector('.sr-tooltip-dialog'),
                     template_choice1 = element[0].querySelector('.sr-choice1-mi-goe'),
                     template_choice2 = element[0].querySelector('.sr-choice2-mi-goe');
+                	
+                var template_procentualBinning = element[0].querySelector('.sr-procentualBinned-mi-goe');
                 
-                $('.choiceSliderValueMiGoe').suffixSpinner({
-                	step: 0.1,
-                	min: 0.1,
-                	max: 100.0,
-                	start: 10.0,
-                	suffix: "%",
-                	numberFormat: "n",
-            		change: function(event, ui) {
-            			if (!event.originalEvent) return;
-            			if (event.originalEvent.type !== "blur") return;
-            			$('.choiceSliderValueMiGoe').suffixSpinner("stepUp");
-            			$('.choiceSliderValueMiGoe').suffixSpinner("stepDown");
-            		}
+                var startSpinner = $('.choiceStartValueMiGoe');
+                startSpinner.spinner({
+                	start: 0,
+                	numberFormat: "n"
+                });
+               
+                var endSpinner = $('.choiceEndValueMiGoe');
+                endSpinner.spinner({
+                	start: 100,
+                	numberFormat: "n"
+                })
+                
+                var stepSpinner = $('.choiceStepValueMiGoe');
+                stepSpinner.spinner({
+                	start: 10,
+                	numberFormat: "n"
+                })
+                        
+                var spinnerChange = function(event, ui) {
+                	var newValue = isNaN(parseFloat(this.value)) ? this.getAttribute("aria-valuenow") : parseFloat(this.value);
+                	$(this).spinner('value', newValue);
+                };
+                
+                startSpinner.on("change", function(event, ui) {
+                	if (this.value === "MIN") $(this).spinner('value', this.value);
+                	else spinnerChange(event, ui);
                 });
                 
-                $('.choiceConceptBoxSliderMiGoe').slider({
-                	range: "min",
-                	value: 100,
-                	min: 1,
-                	max: 1000,
-                	slide: function(event, ui) {
-                		this.parentElement.querySelector('.choiceSliderValueMiGoe').innerHTML = ui.value/10 + " %";
-                	}
+                endSpinner.on("change", function(event, ui) {
+                	if (this.value === "MAX") $(this).spinner('value', this.value);
+                	else spinnerChange(event, ui);
                 });
+                
+                stepSpinner.on("change", spinnerChange);
                 
                 var isChoice2 = function() {
-                	return template_choice2.classList.contains("ng-valid-parse");
+                	return template_choice2.checked;
                 }
                 
                 // instantiate tooltips
@@ -143,6 +141,13 @@ window.smartRApp.directive('choiceConceptBoxMiGoe', [
                 // this watches the childNodes of the conceptBox and updates the model on change
                 new MutationObserver(function() {
                 	scope.conceptGroup.concepts = _getConcepts(); // update the model
+                	scope.conceptGroup.binning = {
+                			active: isChoice2(),
+                			procentual: template_procentualBinning.checked,
+                			start: startSpinner.spinner('value'),
+                			end: endSpinner.spinner('value'),
+                			step: stepSpinner.spinner('value')
+                	}
                     scope.validate();
                     scope.$apply();
                 }).observe(template_box, { childList: true });
@@ -158,6 +163,10 @@ window.smartRApp.directive('choiceConceptBoxMiGoe', [
                 	}
                     scope.instructionMinNodes = scope.conceptGroup.concepts.length < min;
                     scope.instructionMaxNodes = max !== -1 && scope.conceptGroup.concepts.length > max;
+
+                    element[0].querySelector('.instructionMinNodes').innerHTML = "Drag at least " + min + " node(s) into the box<br/>";
+                    element[0].querySelector('.instructionMaxNodes').innerHTML = "Select at most " + max + " node(s)<br/>";
+                    
                     scope.instructionNodeType = !_containsOnlyCorrectType();
                     // FIXME: Disabled for now because this causes problems with certain datasets for unknown reasons
                     // if (scope.type === 'HD' && scope.conceptGroup.concepts.length > 1) {
@@ -202,6 +211,7 @@ window.smartRApp.directive('choiceConceptBoxMiGoe', [
                 		document.getElementById(scope.identification).querySelector('.sliderContainerMiGoe').style.display = "block";
                 		document.getElementById(scope.identification).querySelector('.noSliderContainerMiGoe').style.marginBottom = "0";
                 	}
+                	scope.validate();
                 });
 
                 scope.validate();
