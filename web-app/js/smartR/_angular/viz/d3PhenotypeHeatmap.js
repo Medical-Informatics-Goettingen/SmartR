@@ -60,7 +60,8 @@ window.smartRApp.directive('phenotypeHeatmapPlot', [
 
             //var geneCardsAllowed = JSON.parse(scope.params.geneCardsAllowed);
             var sortingMethod = scope.params.sorting;
-            var numericName = "Median(" + scope.data.numericName + ")";
+            var printNumericName = numericName && numericName !== "";
+            var numericName = scope.data.numericName + " (Median)";
             
             var gridFieldWidth = 40;
             var gridFieldHeight = 20;
@@ -242,8 +243,8 @@ window.smartRApp.directive('phenotypeHeatmapPlot', [
 
                         var html = "";
                         if (sortingMethod == "patientnumbers") {
-                        	html = 'Patientcount (Sorting Value): ' + d.VALUE + '<br/>' +
-                        			numericName + ' (Numeric Value): ' + d.OTHERVALUE + '<br/>';
+                        	html = 'Patientcount (Sorting Value): ' + d.VALUE + '<br/>';
+                        	if (printNumericName) html = html + numericName + ' (Numeric Value): ' + d.OTHERVALUE + '<br/>';
                         } else {
                         	html = numericName + ' (Sorting Value): ' + d.VALUE + '<br/>' +
                 			'Patientcount: ' + d.OTHERVALUE + '<br/>';

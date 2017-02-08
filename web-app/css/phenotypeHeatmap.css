@@ -131,13 +131,13 @@
 
 .choiceConceptBoxDescMiGoe {
 	display: inline;
-	margin-right: 2px;
 }
 
 .sliderContainerMiGoe span.ui-spinner {
 	display: inline-flex;
 	width: 15%;
-	margin-left:4px;
+	margin-left: 2px;
+	margin-right: 2px;
 }
 
 .sliderContainerMiGoe input {
