@@ -11,7 +11,7 @@
         'timeline', 'timelineEnd', 'timeStamp', 'trace', 'warn'
     ];
     var length = methods.length;
-    console = (window.console = window.console || {}); // jshint ignore:line
+    var console = (window.console = window.console || {}); // jshint ignore:line
 
     while (length--) {
         method = methods[length];

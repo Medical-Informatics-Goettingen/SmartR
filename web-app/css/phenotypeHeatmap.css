@@ -1,0 +1,158 @@
+.square {
+}
+
+.square:hover {
+    opacity: 0.4;
+}
+
+.squareHighlighted {
+    opacity: 0.4;
+}
+
+.extraSquare {
+}
+
+.feature {
+}
+
+.featureSortText {
+}
+
+.selected {
+    opacity: 1;
+}
+
+.extraSquare:hover {
+    opacity: 0.4;
+}
+
+.bar {
+    shape-rendering: crispEdges;
+}
+
+.bar:hover {
+    opacity: 0.4;
+}
+
+.barHighlighted {
+    opacity: 0.4;
+}
+
+.cutoffHighlight {
+    opacity: 0.4;
+}
+
+.box {
+    fill-opacity: 0;
+    shape-rendering: crispEdges;
+}
+
+.box:hover {
+    cursor: pointer;
+    fill-opacity: 0.2;
+}
+
+.sortedBy {
+    stroke: red;
+}
+
+.selectText {
+}
+
+.highlight {
+    font-weight: bold;
+    fill: red;
+}
+
+.node {
+    fill: white;
+    stroke: rgb(0, 126, 126);
+    stroke-width: 1.5px;
+}
+
+.link {
+    fill: none;
+    stroke: #FF8700;
+    stroke-width: 2px;
+}
+
+.sr-heatmap-table {
+	width: 70%;
+    border-collapse: collapse;
+}
+
+.sr-heatmap-table th {
+    font-weight: bold;
+    padding-right: 20px;
+}
+
+.sr-heatmap-table tr {
+
+}
+
+.sr-heatmap-table td {
+    border: solid 1px black;
+    padding: 4px;
+    padding-right: 20px;
+}
+
+.sr-workflow-controls>div {
+    float: right;
+    padding: 5px 15px 5px 15px;
+}
+
+#sr-differential-exp-group {
+	display: none;
+}
+
+#sr-heatmap-cluster-select {
+    width: 100%;
+}
+
+#sr-heatmap-zoom-range {
+    float: right;
+}
+
+.heim-choicegroup-mi-goe {
+	display: inline;
+	border: none;
+}
+
+.heim-input-field .heim-choicegroup-mi-goe label {
+	display: inline-table;
+	padding-left: 10px;
+	width: 0em;
+}
+
+.sliderContainerMiGoe {
+	display: none;
+	margin-bottom:4px;
+}
+
+.choiceConceptBoxDescMiGoe {
+	display: inline;
+	margin-right: 2px;
+}
+
+.sliderContainerMiGoe span.ui-spinner {
+	display: inline-flex;
+	width: 15%;
+	margin-left:4px;
+}
+
+.sliderContainerMiGoe input {
+	display: inline;
+}
+
+.sr-procentualBinned-mi-goe {
+	vertical-align: middle;
+	margin-right: 2px;
+}
+
+.choiceConceptBoxSliderMiGoe .ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus {
+	background: #f4fcf3 url(images/ui-bg_highlight-hard_60_f4fcf3_1x100.png) 50% 50% repeat-x;
+}
+
+.noSliderContainerMiGoe {
+	margin-bottom: 25.2px;
+}

@@ -6,6 +6,7 @@ modules = {
         resource url: [plugin: 'smart-r', dir: 'js/resource', file: 'jquery-ui-1.11.4.min.js']
         resource url: [plugin: 'smart-r', dir: 'js/resource', file: 'd3.min.js']
         resource url: [plugin: 'smart-r', dir: 'js/resource', file: 'd3-tip.js']
+        resource url: [plugin: 'smart-r', dir: 'js/resource', file: 'box.js']
         resource url: [plugin: 'smart-r', dir: 'js/resource', file: 'crossfilter.js']
         resource url: [plugin: 'smart-r', dir: 'js/resource', file: 'plotly-latest.min.js']
         resource url: [plugin: 'smart-r', dir: 'js/resource', file: 'jsrender.js']
@@ -20,6 +21,7 @@ modules = {
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular', file: 'smartRApp.js']
         // directives
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/directives', file: 'conceptBox.js']
+		resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/directives', file: 'choiceConceptBoxMiGoe.js']
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/directives', file: 'tabContainer.js']
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/directives', file: 'workflowTab.js']
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/directives', file: 'fetchButton.js']
@@ -45,6 +47,9 @@ modules = {
         // heatmap
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/controllers', file: 'heatmap.js']
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/viz', file: 'd3Heatmap.js']
+		// phenotypeHeatmap
+        resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/controllers', file: 'phenotypeHeatmap.js']
+        resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/viz', file: 'd3PhenotypeHeatmap.js']
         // correlation
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/controllers', file: 'correlation.js']
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/viz', file: 'd3Correlation.js']
@@ -57,5 +62,8 @@ modules = {
         // linegraph
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/controllers', file: 'linegraph.js']
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/viz', file: 'd3Linegraph.js']
+        // Alpha-Diversity
+        resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/controllers', file: 'alphadiv.js']
+        resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/viz', file: 'd3Alphadiv.js']
     }
 }

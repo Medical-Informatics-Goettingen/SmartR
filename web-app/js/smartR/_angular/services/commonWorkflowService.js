@@ -7,6 +7,7 @@ window.smartRApp.factory('commonWorkflowService', ['rServeService', '$css', func
     var service = {};
 
     service.initializeWorkflow = function(workflowName, scope) {
+        console.log(workflowName);
         service.currentScope = scope;
         // load workflow specific css
         $css.bind({

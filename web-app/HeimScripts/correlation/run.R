@@ -1,7 +1,7 @@
 library(reshape2)
 
 main <- function(method = "pearson", transformation = "raw", selectedPatientIDs = integer()) {
-
+    save(loaded_variables, file="C:/Users/baum_benjamin/Desktop/R/corr_loaded_variables.Rda")
     df1 <- loaded_variables$datapoints_n0_s1
     df2 <- loaded_variables$datapoints_n1_s1
 

@@ -30,6 +30,9 @@ window.smartRApp.directive('boxplot', [
 
     function createBoxplot(scope, vizDiv) {
         var cf = crossfilter(scope.data.dataMatrix);
+        console.log("boxplot data")
+        console.log(scope.data)
+        console.log("boxplot data")
         var byValue = cf.dimension(function(d) { return d.value; });
         var bySubset = cf.dimension(function(d) { return d.subset; });
         var byBioMarker = cf.dimension(function(d) { return d.bioMarker; });

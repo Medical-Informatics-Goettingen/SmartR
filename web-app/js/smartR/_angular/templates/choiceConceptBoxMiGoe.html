@@ -1,0 +1,33 @@
+<div class="heim-input-field heim-dropzone sr-hd-input" id="{{identification}}"> 
+    <label style="display: inline;">{{label}} <i class="ui-icon ui-icon-info sr-tooltip-dialog" title="{{tooltip}}"> </i></label>
+	<fieldset class="heim-choicegroup-mi-goe">
+    <label>
+    <input type="radio" ng-model="fetchData.choice" name="{{identification}}" value="choice1" class="sr-choice1-mi-goe" ng-checked="true">
+	{{choice1}}
+    </label>
+    <label>
+    <input type="radio" ng-model="fetchData.choice" name="{{identification}}" value="choice2" class="sr-choice2-mi-goe">
+    {{choice2}}
+    </label>
+    </fieldset>
+    <div class="sliderContainerMiGoe">
+	<span class="choiceConceptBoxDescMiGoe">Start:</span>
+	<input class="choiceStartValueMiGoe" value="0"></input>
+	<span class="choiceConceptBoxDescMiGoe">End:</span>
+	<input class="choiceEndValueMiGoe" value="100"></input>
+	<span class="choiceConceptBoxDescMiGoe">Step:</span>
+	<input class="choiceStepValueMiGoe" value="10"></input>
+	<input type="checkbox" ng-model="fetchData.procentualBinned" value="procentualBinned" class="sr-procentualBinned-mi-goe">Percentages</input>
+	</div>
+	<div class="noSliderContainerMiGoe"></div>
+    <span ng-show="instructionMinNodes" class="sr-instruction instructionMinNodes">Drag at least {{min1}} node(s) into the box<br /></span>
+    <span ng-show="instructionMaxNodes" class="sr-instruction instructionMaxNodes">Select at most {{max1}} node(s)<br /></span>
+    <span ng-show="instructionNodeType" class="sr-instruction">Node(s) do not have the correct type<br /></span>
+    <span ng-show="instructionNodePlatform" class="sr-instruction">Nodes must have the same platform</span>
+    <div class="sr-drop-input" ng-class="{true:'sr-drop-input-valid', false:'sr-drop-input-invalid'}[conceptGroup.valid]"
+        style="overflow-y:auto">
+    </div>
+    <div style="margin-top: 10px; text-align: right;">
+        <input type="button" value="Clear Window" class="sr-drop-btn">
+    </div>
+</div>

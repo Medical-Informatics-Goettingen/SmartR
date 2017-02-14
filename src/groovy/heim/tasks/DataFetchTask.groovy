@@ -217,7 +217,8 @@ class DataFetchTask extends AbstractTask {
 
     private clearPreviousCreatedFiles() {
         rServeSession.doWithRConnection { RConnection conn ->
-            RUtil.runRCommand conn, 'file.remove(list.files())'
+            //TODO remove commentating
+           // RUtil.runRCommand conn, 'file.remove(list.files())'
         }
     }
 
@@ -261,6 +262,7 @@ class DataFetchTask extends AbstractTask {
                     conn.createFile(filename), 81920)
 
             log.info("Will start writing tabular result in file $filename")
+            log.debug("testdebug")
             final Stopwatch stopwatch = Stopwatch.createStarted()
 
             Writer writer = new OutputStreamWriter(os, Charsets.UTF_8)
