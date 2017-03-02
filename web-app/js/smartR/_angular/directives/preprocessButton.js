@@ -53,6 +53,8 @@ window.smartRApp.directive('preprocessButton', [
                     template_msg.innerHTML = 'Execute summary statistics, please wait <span class="blink_me">_</span>';
                     rServeService.executeSummaryStats('preprocess', scope.projection).then(
                         function (data) {
+                            console.log("data2:");
+                            console.log(data);
                             scope.summaryData = data.result; // this will trigger $watch
                         },
                         _onFail

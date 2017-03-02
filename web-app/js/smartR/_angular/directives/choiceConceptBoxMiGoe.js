@@ -35,7 +35,15 @@ window.smartRApp.directive('choiceConceptBoxMiGoe', [
                     template_tooltip = element[0].querySelector('.sr-tooltip-dialog'),
                     template_choice1 = element[0].querySelector('.sr-choice1-mi-goe'),
                     template_choice2 = element[0].querySelector('.sr-choice2-mi-goe');
-                	
+
+                scope.conceptGroup.binning = {
+                		active: false,
+                		procentual: false,
+                		start: 0,
+                		end: 100,
+                		step: 10
+                };
+
                 var template_procentualBinning = element[0].querySelector('.sr-procentualBinned-mi-goe');
                 
                 var startSpinner = $('.choiceStartValueMiGoe');
@@ -64,14 +72,19 @@ window.smartRApp.directive('choiceConceptBoxMiGoe', [
                 startSpinner.on("change", function(event, ui) {
                 	if (this.value === "MIN") $(this).spinner('value', this.value);
                 	else spinnerChange(event, ui);
+                	scope.conceptGroup.binning.start = $(this).spinner('value');
                 });
                 
                 endSpinner.on("change", function(event, ui) {
                 	if (this.value === "MAX") $(this).spinner('value', this.value);
                 	else spinnerChange(event, ui);
+                	scope.conceptGroup.binning.end = $(this).spinner('value');
                 });
                 
-                stepSpinner.on("change", spinnerChange);
+                stepSpinner.on("change", function(event, ui) {
+                	spinnerChange();
+                	scope.conceptGroup.binning.step = $(this).spinner('value');
+                });
                 
                 var isChoice2 = function() {
                 	return template_choice2.checked;
@@ -141,13 +154,13 @@ window.smartRApp.directive('choiceConceptBoxMiGoe', [
                 // this watches the childNodes of the conceptBox and updates the model on change
                 new MutationObserver(function() {
                 	scope.conceptGroup.concepts = _getConcepts(); // update the model
-                	scope.conceptGroup.binning = {
+                	/*scope.conceptGroup.binning = {
                 			active: isChoice2(),
                 			procentual: template_procentualBinning.checked,
                 			start: startSpinner.spinner('value'),
                 			end: endSpinner.spinner('value'),
                 			step: stepSpinner.spinner('value')
-                	}
+                	}*/
                     scope.validate();
                     scope.$apply();
                 }).observe(template_box, { childList: true });
@@ -205,14 +218,21 @@ window.smartRApp.directive('choiceConceptBoxMiGoe', [
                 scope.$watch('fetchData.choice', function(value) {
                 	if (value === undefined) return;
                 	if (value == "choice1") {
+                		scope.conceptGroup.binning.active = false;
                 		document.getElementById(scope.identification).querySelector('.sliderContainerMiGoe').style.display = "";
                 		document.getElementById(scope.identification).querySelector('.noSliderContainerMiGoe').style.marginBottom = "";
                 	} else if (value == "choice2") {
+                		scope.conceptGroup.binning.active = true;
                 		document.getElementById(scope.identification).querySelector('.sliderContainerMiGoe').style.display = "block";
                 		document.getElementById(scope.identification).querySelector('.noSliderContainerMiGoe').style.marginBottom = "0";
                 	}
                 	scope.validate();
                 });
+
+                scope.$watch('fetchData.procentualBinned', function(value) {
+                	if (!value) return;
+                	scope.conceptGroup.binning.procentual = value;
+                })
 
                 scope.validate();
             }

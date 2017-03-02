@@ -158,23 +158,29 @@ binCategory <- function(category, binObject) {
 			
 			minVal <- min(category$VALUE)
 			maxVal <- max(category$VALUE)
-			percentStep <- diff(range(minVal, maxVal))/100 * stepSize
-			steps <- seq(minVal, maxVal, percentStep)
-			idx <- 0
+
+			onePercent <- diff(range(minVal, maxVal))/100
+			percentStep <- onePercent * stepSize
+			steps <- seq(onePercent*start, onePercent*(end-percentStep), percentStep)
+
+			idx <- start
 			for (step in steps) {
-				categoryName <- paste(rowname, " [", idx, "% - ", idx+stepSize, "%)", sep="")
-				tryCatch({category[values >= step & values < step+percentStep,]$VALUE <- categoryName},
+				categoryName <- paste(rowname, " (", step, " - ", step+percentStep, "%]", sep="")
+				tryCatch({category[values > step & values <= step+percentStep,]$VALUE <- categoryName},
 				error=function(e){print(paste("In value range",step,"to",step+percentStep,"no value was present."))})
 				idx = idx + stepSize;
 			}	
 		} else {
-			steps <- seq(start, end, stepSize)
+			steps <- seq(start, end-stepSize, stepSize)
 			for (step in steps) {
 				categoryName <- paste(rowname, " [", step, " - ", step+stepSize, ")", sep="")
 				tryCatch({category[values >= step & values < step+stepSize,]$VALUE <- categoryName},
 				error=function(e){print("In one value range, no value was present.")})
 			}
 		}
+
+		## Eliminate variables out of scope:
+		category <- category[suppressWarnings(is.na(as.numeric(category$VALUE))),]
 	}
 	return(category)
 }
@@ -195,10 +201,10 @@ main <- function(max_rows = 100, sorting = "patientnumbers", ranking = "mean", s
     columnValues <- mixedsort(as.character(unique(column["VALUE"])[[1]]))
     rowValues <- mixedsort(as.character(unique(row["VALUE"])[[1]]))
 
-	ROWNAME.vec = character()
-	COLNAME.vec = character()
-	VALUE.vec = numeric()
-	OTHERVALUE.vec = numeric()
+	ROWNAME.vec <- character()
+	COLNAME.vec <- character()
+	VALUE.vec <- numeric()
+	OTHERVALUE.vec <- numeric()
 
     for (i in 1:length(rowValues)) {
     for (j in 1:length(columnValues)) {
@@ -292,7 +298,9 @@ main <- function(max_rows = 100, sorting = "patientnumbers", ranking = "mean", s
     tmp.numericName <- as.character(numValues$ROWNAME[1])
 	tmp.namePos <- regexpr("//", tmp.numericName)[1]
 	tmp.numericName <- substring(tmp.numericName, tmp.namePos+2)
-    
+
+
+
     ## The returned jsn object that will be dumped to file
     jsn <- list(
         "fields"              = fields,

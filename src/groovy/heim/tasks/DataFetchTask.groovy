@@ -218,7 +218,7 @@ class DataFetchTask extends AbstractTask {
     private clearPreviousCreatedFiles() {
         rServeSession.doWithRConnection { RConnection conn ->
             //TODO remove commentating
-           // RUtil.runRCommand conn, 'file.remove(list.files())'
+//            RUtil.runRCommand conn, 'file.remove(list.files())'
         }
     }
 

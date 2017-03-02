@@ -86,7 +86,11 @@ window.smartRApp.directive('fetchButton', [
                     scope.message = 'Executing summary statistics, please wait <span class="blink_me">_</span>';
                     rServeService.executeSummaryStats('fetch')
                         .then(
-                            function(data) { scope.summaryData = data.result; }, // this will trigger $watch
+
+                            function(data) {
+                                console.log("RESULT");
+                                console.log(data);
+                                scope.summaryData = data.result; }, // this will trigger $watch
                             _onFailure
                         );
                 };

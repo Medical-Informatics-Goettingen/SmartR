@@ -3,7 +3,7 @@ library(vegan)
 library(ggplot2)
 
 main <- function(inputmode = "shannon", selectedPatientIDs = integer()) {
-  #save(loaded_variables, file="C:/Users/baum_benjamin/Desktop/R/loaded_variables.Rda")
+
 
 
 

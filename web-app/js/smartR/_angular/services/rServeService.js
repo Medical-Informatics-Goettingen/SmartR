@@ -280,6 +280,9 @@ window.smartRApp.factory('rServeService', [
         };
 
         service.executeSummaryStats = function(phase, projection) {
+            console.log("phase:");
+            console.log(phase);
+            console.log(projection)
             projection = typeof projection === 'undefined' ? 'log_intensity' : projection; // default to log_intensity
             return $q(function(resolve, reject) {
                 service.startScriptExecution({
@@ -290,6 +293,8 @@ window.smartRApp.factory('rServeService', [
                     }
                 }).then(
                     function(response) {
+                        console.log("response")
+                        console.log(response)
                         if (response.result.artifacts.files.length > 0) {
                             service.composeSummaryResults(response.result.artifacts.files, response.executionId, phase)
                                 .then(
