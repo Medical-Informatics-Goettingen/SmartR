@@ -165,7 +165,7 @@ binCategory <- function(category, binObject) {
 			
 			idx <- start
 			for (step in steps) {
-				categoryName <- paste(rowname, " (", idx, "% - ", idx+stepSize, "%]", sep="")
+				categoryName <- paste(rowname, " (", step, " - ", step+percentStep, "%]", sep="")
 				tryCatch({category[values > step & values <= step+percentStep,]$VALUE <- categoryName},
 				error=function(e){print(paste("In value range",step,"to",step+percentStep,"no value was present."))})
 				idx = idx + stepSize;
@@ -298,6 +298,8 @@ main <- function(max_rows = 100, sorting = "patientnumbers", ranking = "mean", s
     tmp.numericName <- as.character(numValues$ROWNAME[1])
 	tmp.namePos <- regexpr("//", tmp.numericName)[1]
 	tmp.numericName <- substring(tmp.numericName, tmp.namePos+2)
+	
+	
     
     ## The returned jsn object that will be dumped to file
     jsn <- list(
