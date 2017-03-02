@@ -158,11 +158,11 @@ binCategory <- function(category, binObject) {
 			
 			minVal <- min(category$VALUE)
 			maxVal <- max(category$VALUE)
-
+			
 			onePercent <- diff(range(minVal, maxVal))/100
 			percentStep <- onePercent * stepSize
 			steps <- seq(onePercent*start, onePercent*(end-percentStep), percentStep)
-
+			
 			idx <- start
 			for (step in steps) {
 				categoryName <- paste(rowname, " (", step, " - ", step+percentStep, "%]", sep="")
@@ -178,7 +178,7 @@ binCategory <- function(category, binObject) {
 				error=function(e){print("In one value range, no value was present.")})
 			}
 		}
-
+		
 		## Eliminate variables out of scope:
 		category <- category[suppressWarnings(is.na(as.numeric(category$VALUE))),]
 	}
@@ -298,9 +298,9 @@ main <- function(max_rows = 100, sorting = "patientnumbers", ranking = "mean", s
     tmp.numericName <- as.character(numValues$ROWNAME[1])
 	tmp.namePos <- regexpr("//", tmp.numericName)[1]
 	tmp.numericName <- substring(tmp.numericName, tmp.namePos+2)
-
-
-
+	
+	
+    
     ## The returned jsn object that will be dumped to file
     jsn <- list(
         "fields"              = fields,
