@@ -53,10 +53,9 @@ svg.append('img')
     .attr('src', "data:image/png;base64," + scope.data.plots[0]);
 
 
-            // for (var i = 0; i < scope.data.plots.length ; i++) {
-            //     document.getElementById("ped").src = "data:image/png;base64," + scope.data.plots[0];
-            //
-            // }
+            for (var i = 0; i < scope.data.plots.length ; i++) {
+                document.getElementById("ped").src = "data:image/png;base64," + scope.data.plots[0];
+            }
             console.log(scope)
             console.log(scope.data);
 

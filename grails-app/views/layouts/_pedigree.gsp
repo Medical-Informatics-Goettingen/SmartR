@@ -10,7 +10,7 @@
                          type="LD-categorical"
                          min="0"
                          max="-1"
-                         label="(optional) Categorical Variables"
+                         label="PED-File Variables (Family, Sex, ID, Mother, Father)"
                          tooltip="Select the PED Folder">
             </concept-box>
             <concept-box style="display: inline-block;"
