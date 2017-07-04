@@ -44,7 +44,27 @@ window.smartRApp.directive('choiceConceptBoxMiGoe', [
                 		step: 10
                 };
                 
+                template_choice1.addEventListener("click", function() {
+                	scope.conceptGroup.binning.active = false;
+            		document.getElementById(scope.identification).querySelector('.sliderContainerMiGoe').style.display = "";
+            		document.getElementById(scope.identification).querySelector('.noSliderContainerMiGoe').style.marginBottom = "";
+            		scope.validate();
+                })
+                
+                template_choice2.addEventListener("click", function() {
+                	scope.conceptGroup.binning.active = true;
+            		document.getElementById(scope.identification).querySelector('.sliderContainerMiGoe').style.display = "block";
+            		document.getElementById(scope.identification).querySelector('.noSliderContainerMiGoe').style.marginBottom = "0";
+            		scope.validate();
+                })
+                
                 var template_procentualBinning = element[0].querySelector('.sr-procentualBinned-mi-goe');
+                
+                template_procentualBinning.addEventListener("click", function() {
+                	scope.conceptGroup.binning.procentual = !scope.conceptGroup.binning.procentual;
+                	scope.validate();
+                })
+                
                 
                 var startSpinner = $('.choiceStartValueMiGoe');
                 startSpinner.spinner({
@@ -73,21 +93,24 @@ window.smartRApp.directive('choiceConceptBoxMiGoe', [
                 	if (this.value === "MIN") $(this).spinner('value', this.value);
                 	else spinnerChange(event, ui);
                 	scope.conceptGroup.binning.start = $(this).spinner('value');
+                	scope.validate();
                 });
                 
                 endSpinner.on("change", function(event, ui) {
                 	if (this.value === "MAX") $(this).spinner('value', this.value);
                 	else spinnerChange(event, ui);
                 	scope.conceptGroup.binning.end = $(this).spinner('value');
+                	scope.validate();
                 });
                 
                 stepSpinner.on("change", function(event, ui) {
                 	spinnerChange();
                 	scope.conceptGroup.binning.step = $(this).spinner('value');
+                	scope.validate();
                 });
                 
                 var isChoice2 = function() {
-                	return template_choice2.checked;
+                	return scope.conceptGroup.binning.active;
                 }
                 
                 // instantiate tooltips
@@ -214,25 +237,6 @@ window.smartRApp.directive('choiceConceptBoxMiGoe', [
                                                      instructionMaxNodes ||
                                                      instructionMinNodes);
                     });
-                
-                scope.$watch('fetchData.choice', function(value) {
-                	if (value === undefined) return;
-                	if (value == "choice1") {
-                		scope.conceptGroup.binning.active = false;
-                		document.getElementById(scope.identification).querySelector('.sliderContainerMiGoe').style.display = "";
-                		document.getElementById(scope.identification).querySelector('.noSliderContainerMiGoe').style.marginBottom = "";
-                	} else if (value == "choice2") {
-                		scope.conceptGroup.binning.active = true;
-                		document.getElementById(scope.identification).querySelector('.sliderContainerMiGoe').style.display = "block";
-                		document.getElementById(scope.identification).querySelector('.noSliderContainerMiGoe').style.marginBottom = "0";
-                	}
-                	scope.validate();
-                });
-                
-                scope.$watch('fetchData.procentualBinned', function(value) {
-                	if (!value) return;
-                	scope.conceptGroup.binning.procentual = value;
-                })
 
                 scope.validate();
             }
