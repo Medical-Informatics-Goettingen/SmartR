@@ -48,6 +48,10 @@ window.smartRApp.directive('choiceConceptBoxMiGoe', [
                 	scope.conceptGroup.binning.active = false;
             		document.getElementById(scope.identification).querySelector('.sliderContainerMiGoe').style.display = "";
             		document.getElementById(scope.identification).querySelector('.noSliderContainerMiGoe').style.marginBottom = "";
+            		
+            		template_choice1.classList.add("buttonInUsage");
+            		template_choice2.classList.remove("buttonInUsage");
+            		
             		scope.validate();
                 })
                 
@@ -55,6 +59,10 @@ window.smartRApp.directive('choiceConceptBoxMiGoe', [
                 	scope.conceptGroup.binning.active = true;
             		document.getElementById(scope.identification).querySelector('.sliderContainerMiGoe').style.display = "block";
             		document.getElementById(scope.identification).querySelector('.noSliderContainerMiGoe').style.marginBottom = "0";
+            		
+            		template_choice1.classList.remove("buttonInUsage");
+            		template_choice2.classList.add("buttonInUsage");
+            		
             		scope.validate();
                 })
                 
@@ -62,6 +70,9 @@ window.smartRApp.directive('choiceConceptBoxMiGoe', [
                 
                 template_procentualBinning.addEventListener("click", function() {
                 	scope.conceptGroup.binning.procentual = !scope.conceptGroup.binning.procentual;
+                	
+                	template_procentualBinning.classList.toggle("buttonInUsage");
+
                 	scope.validate();
                 })
                 
