@@ -140,7 +140,27 @@ window.smartRApp.directive('choiceConceptBoxMiGoe', [
                 var _activateDragAndDrop = function() {
                     var extObj = Ext.get(template_box);
                     var dtgI = new Ext.dd.DropTarget(extObj, {ddGroup: 'makeQuery'});
-                    dtgI.notifyDrop = dropOntoCategorySelection; // jshint ignore:line
+                    dtgI.notifyDrop = dropWithFolderOntoSelection;
+                    
+                    function dropWithFolderOntoSelection(source, e, data)
+                    {
+                        var targetdiv=this.el;
+                        if(data.node.leaf == false && !data.node.isLoaded()) {
+                            data.node.reload(function(){
+                                analysisConcept = dropWithFolderOntoSelection2(source, e, data, targetdiv);
+                            });
+                        }
+                        else {
+                            analysisConcept = dropWithFolderOntoSelection2(source, e, data, targetdiv);
+                        }
+                        return true;
+                    }
+
+                    function dropWithFolderOntoSelection2(source, e, data, targetdiv)
+                    {
+                        var concept = createPanelItemNew(targetdiv, convertNodeToConcept(data.node));
+                        return concept;
+                    }  
                 };
 
                 var typeMap = {
@@ -215,21 +235,6 @@ window.smartRApp.directive('choiceConceptBoxMiGoe', [
                     element[0].querySelector('.instructionMaxNodes').innerHTML = "Select at most " + max + " node(s)<br/>";
                     
                     scope.instructionNodeType = !_containsOnlyCorrectType();
-                    // FIXME: Disabled for now because this causes problems with certain datasets for unknown reasons
-                    // if (scope.type === 'HD' && scope.conceptGroup.concepts.length > 1) {
-                    //     _getNodeDetails(scope.conceptGroup.concepts, function(response) {
-                    //         if (Object.keys(response.data).length < 2) {
-                    //             var platforms = response.data[Object.keys(response.data)[0]].platforms;
-                    //             scope.instructionNodePlatform = !platforms.every(function(el) { 
-                    //                 return el.title === platforms[0].title;
-                    //             });
-                    //         } else {
-                    //             scope.instructionNodePlatform = true;
-                    //         }
-                    //     });
-                    // } else {
-                    //     scope.instructionNodePlatform = false;
-                    // }
                     scope.instructionNodePlatform = false;
                 };
 
