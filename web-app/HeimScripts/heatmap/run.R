@@ -25,6 +25,7 @@ SUBSET1REGEX <- "_s1$"  # Regex identifying columns of subset 1.
 markerTableJson <- "markerSelectionTable.json" # Name of the json file with limma outputs
 
 main <- function(max_rows = 100, sorting = "nodes", ranking = "coef", selections = list(), geneCardsAllowed = FALSE) {
+    save(loaded_variables,file="C:/tmp/loaded_variables_heatmap.Rda")
     max_rows <- as.numeric(max_rows)
     verifyInputHeatmap(max_rows, sorting)
     

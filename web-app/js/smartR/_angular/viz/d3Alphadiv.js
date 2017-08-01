@@ -17,78 +17,86 @@ window.smartRApp.directive('alphadiv', [
             },
             templateUrl: $rootScope.smartRPath +  '/js/smartR/_angular/templates/alphadiv.html',
             link: function (scope, element) {
-                var template_ctrl = element.children()[0],
-                    template_viz = element.children()[1];
+                var vizDiv = element.children()[0];
                 /**
                  * Watch data model (which is only changed by ajax calls when we want to (re)draw everything)
                  */
                 scope.$watch('data', function () {
-                    $(template_viz).empty();
+                    $(vizDiv).empty();
                     if (! $.isEmptyObject(scope.data)) {
-                        smartRUtils.prepareWindowSize(scope.width, scope.height);
-                        scope.showControls = true;
-                        createBoxplot2(scope, template_viz, template_ctrl);
+                        createBoxplot2(scope, vizDiv);
                     }
                 });
             }
         };
 
-
         function createBoxplot2(scope, vizDiv) {
-            console.log("test2")
-            console.log(scope)
 
-            console.log(scope.data);
-            console.log("mode: "  +scope.data.mode);
+            var scope = scope.data;
+            console.log(scope);
+            var mode = scope.mode;
+            console.log("mode: "  +mode);
 
-            var data = scope.data.data;
-
-            console.log("data");
-            console.log(data);
-
-
-            data.forEach(function(x){
-                console.log(x.alpha);
-            });
-
-            var cf = crossfilter(data);
-            console.log("boxplot data")
-            console.log(scope.data)
-            console.log("boxplot data")
-            var byValue = cf.dimension(function(d) { return d.alpha; });
-            var bySubset = cf.dimension(function(d) { return d.subset; });
-            var byBioMarker = cf.dimension(function(d) { return d.meta; });
+            var subsets = scope.subset;
+            console.log("subsets: " + subsets)
 
             var plotData = [];
-            smartRUtils.unique(smartRUtils.getValuesForDimension(byBioMarker)).forEach(function(bioMarker) {
-                byBioMarker.filterExact(bioMarker);
-                smartRUtils.unique(smartRUtils.getValuesForDimension(bySubset, true)).forEach(function(subset) {
-                    bySubset.filterExact(subset);
+
+            subsets.forEach(function(f){
+                console.log("subset: " + f)
+                var data;
+                if (f==1)
+                    data = scope.data.s1;
+                else
+                    data = scope.data.s2;
+                var xData = [];
+                var yData = [];
+                //subset1 & 2
+                data.forEach(function(x){
+
+                    if (yData[x.meta]) {
+                        yData[x.meta].push(x.alpha);
+                    }
+                    else {
+                        yData[x.meta] = [];
+                        xData.push(x.meta);
+                    }
+                });
+
+
+                console.log("yData")
+                console.log(yData)
+                console.log("xData")
+                console.log(xData)
+                //subsets
+
+                for (var i = 0; i < xData.length; i++) {
+                    console.log("xData " + xData[i]);
+                    console.log("yData " + yData[xData[i]])
                     plotData.push({
                         type: 'box',
-                        y: smartRUtils.getValuesForDimension(byValue),
-                        name: bioMarker + ' s' + subset,
+                        y: yData[xData[i]],
+                        name: "Subset: " + f + "<br>Category: " + xData[i],
                         boxpoints: 'all',
                         boxmean: 'sd',
                         jitter: 0.5
                     });
-                    bySubset.filterAll();
-                });
-                byBioMarker.filterAll();
+                }
             });
+            for (var subset = 1; subset<=subsets; subset++) {
 
+            }
+            console.log("title: " + scope.mode);
             var layout = {
-                title: 'Boxplots (' + scope.data.transformation + ')',
+                title: 'Alpha-Diversity (' + mode + ')',
                 height: 800
             };
+
+            // vizDiv = document.getElementById('test');
+
             Plotly.newPlot(vizDiv, plotData, layout);
 
-
-
-
-
         }
-
 
     }]);
 

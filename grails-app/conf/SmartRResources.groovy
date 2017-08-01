@@ -65,6 +65,9 @@ modules = {
         // Alpha-Diversity
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/controllers', file: 'alphadiv.js']
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/viz', file: 'd3Alphadiv.js']
+        // Beta-Diversity
+        resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/controllers', file: 'betadiversity.js']
+        resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/viz', file: 'd3BetaDiversity.js']
         // Pedigree
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/controllers', file: 'pedigree.js']
         resource url: [plugin: 'smart-r', dir: 'js/smartR/_angular/viz', file: 'd3Pedigree.js']

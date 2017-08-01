@@ -1,46 +1,60 @@
-//# sourceURL=d3Heatmap.js
+//# sourceURL=d3BetaDiversity.js
 
 'use strict';
 
-window.smartRApp.directive('heatmapPlot', [
+window.smartRApp.directive('betadiversity', [
     'smartRUtils',
+    'rServeService',
     '$rootScope',
-    function(smartRUtils, $rootScope) {
+    function(smartRUtils, rServeService, $rootScope) {
 
         return {
             restrict: 'E',
             scope: {
                 data: '=',
                 width: '@',
-                height: '@',
-                params: '='
+                height: '@'
             },
-            templateUrl: $rootScope.smartRPath +  '/js/smartR/_angular/templates/heatmap.html',
-            link: function(scope, element) {
-                var viz = element.children()[1];
+            templateUrl: $rootScope.smartRPath +  '/js/smartR/_angular/templates/betadiversity.html',
+            link: function (scope, element) {
+                console.log("0")
+                var vizDiv = element.children()[0];
+                console.log("0.1")
                 /**
                  * Watch data model (which is only changed by ajax calls when we want to (re)draw everything)
                  */
-                scope.$watch('data', function(newValue) {
-                    scope.showControls = false;
-                    angular.element(viz).empty();
-                    if (angular.isArray(newValue.fields)) {
-                        scope.showControls = true;
-                        createHeatmap(scope, viz);
+                scope.$watch('data', function () {
+                    console.log("1")
+                    $(vizDiv).empty();
+                    console.log("2")
+                    if (! $.isEmptyObject(scope.data)) {
+                        console.log("3")
+                        createBetaDiv(scope, vizDiv);
                     }
-                }, true);
+                    else {
+                        console.log("ELSE")
+                    }
+                });
             }
         };
 
-        function createHeatmap(scope, root) {
-            console.log("HEATMAP SCOPE")
+        function createBetaDiv(scope, root) {
+//            var scope = scope.data;
+
             console.log(scope)
-            console.log("HEATMAP SCOPE")
+            scope.params = [];
+            scope.params.geneCardsAllowed = false;
+            scope.params.max_row = 100;
+            scope.params.ranking = "zscore";
+            scope.params.sorting = "nodes";
+            scope.data.ranking = [];
+            scope.data.ranking[0] = "zscore";
             var ANIMATION_DURATION = 1500;
 
             var fields = scope.data.fields;
             var extraFields = scope.data.extraFields;
             var features = scope.data.features.constructor === Array ? scope.data.features : [];
+            console.log(features)
 
             var colNames = scope.data.colNames; // unique
             var rowNames = scope.data.rowNames; // unique
@@ -59,7 +73,8 @@ window.smartRApp.directive('heatmapPlot', [
             var originalRowNames = rowNames.slice();
 
             var ranking = scope.data.ranking[0].toUpperCase();
-            var statistics = scope.data.allStatValues;
+            //var statistics = scope.data.allStatValues;
+            var statistics = scope.data.fields;
 
             var geneCardsAllowed = JSON.parse(scope.params.geneCardsAllowed);
 
@@ -115,7 +130,7 @@ window.smartRApp.directive('heatmapPlot', [
             cutoffRange.setAttribute('max', rowNames.length - 1);
             cutoffRange.value = 0;
             cutoffRange.disabled = rowNames.length < 2;
-            
+
             setCutoffBtnText();
 
             var clusterSelect = smartRUtils.getElementWithoutEventListeners('sr-heatmap-cluster-select');
@@ -154,12 +169,13 @@ window.smartRApp.directive('heatmapPlot', [
 
             function setScales() {
                 scale = d3.scale.linear()
-                    .domain(d3.extent(statistics.map(function(d) { return d[ranking]; })))
+                    .domain(d3.extent(statistics.map(function(d) {return d[ranking]; })))
                     .range((ranking === 'PVAL' || ranking === 'ADJPVAL') ? [histogramHeight, 0] : [0, histogramHeight]);
 
                 histogramScale = function(value) {
                     return (ranking === 'TTEST' || ranking === 'LOGFOLD') ? scale(Math.abs(value)) : scale(value);
                 };
+//                console.log(histogramScale)
             }
             setScales();
 
@@ -223,15 +239,15 @@ window.smartRApp.directive('heatmapPlot', [
                 updateHeatmapTable();
                 var square = squareItems.selectAll('.square')
                     .data(fields);
-
+                console.log(colNames);
                 square.enter()
                     .append('rect')
                     .attr('class', function(d) {
                         return 'square colname-' + smartRUtils.makeSafeForCSS(d.COLNAME) +
                             ' rowname-' + smartRUtils.makeSafeForCSS(d.ROWNAME);
                     })
-                    .attr('x', function(d) { return colNames.indexOf(d.COLNAME) * gridFieldWidth; })
-                    .attr('y', function(d) { return rowNames.indexOf(d.ROWNAME) * gridFieldHeight; })
+                    .attr('x', function(d) { return colNames.indexOf(""+d.COLNAME) * gridFieldWidth; })
+                    .attr('y', function(d) { return rowNames.indexOf(""+d.ROWNAME) * gridFieldHeight; })
                     .attr('width', gridFieldWidth)
                     .attr('height', gridFieldHeight)
                     .on('mouseover', function(d) {
@@ -288,7 +304,7 @@ window.smartRApp.directive('heatmapPlot', [
                     return arr.every(function(d, i) {
                         if (i === arr.length - 1) {
                             return true;
-                        } 
+                        }
                         var diff = arr[i][1] - arr[i + 1][1];
                         return isNaN(diff) ? (arr[i][1].localeCompare(arr[i + 1][1]) <= 0) : diff >= 0;
                     });
@@ -412,8 +428,8 @@ window.smartRApp.directive('heatmapPlot', [
                     .on('click', function() {
                         var rowValues = statistics.map(function(d) { return d[ranking]; })
                             .map(function(significanceValue, idx) {
-                            return [idx, getInternalSortValue(significanceValue)];
-                        });
+                                return [idx, getInternalSortValue(significanceValue)];
+                            });
 
                         if (isSorted(rowValues)) {
                             rowValues.sort(function(a, b) { return a[1] - b[1]; });
@@ -711,8 +727,9 @@ window.smartRApp.directive('heatmapPlot', [
                 var probeIDs = [];
                 var entities = [];
                 rowNames.forEach(function(rowName) {
-                    probeIDs.push(rowName.match(/.+(?=--)/)[0]);
-                    entities.push(rowName.match(/.+?--(.*)/)[1]);
+                    console.log(rowName)
+                    probeIDs.push(rowName);//.match(/.+(?=--)/)[0]);
+                    entities.push(rowName);//.match(/.+?--(.*)/)[1]);
                 });
 
                 var rows = tbody.selectAll('tr')
@@ -869,7 +886,7 @@ window.smartRApp.directive('heatmapPlot', [
                     .attr('fill', function(d) {
                         return colorScale(1 / (1 + Math.pow(Math.E, -d.ZSCORE)));
                     });
-                    
+
                 d3.selectAll('.legendColor')
                     .transition()
                     .duration(animationCheck.checked ? ANIMATION_DURATION : 0)
@@ -980,17 +997,17 @@ window.smartRApp.directive('heatmapPlot', [
                     .attr('transform', function(d) {
                         return 'translate(' + d.x + ',' + (-spacing - w + d.y) + ')';
                     }).on('click', function(d) {
-                        var previousSelection = selectedColNames.slice();
+                    var previousSelection = selectedColNames.slice();
+                    unselectAll();
+                    var leafs = d.index.split(' ');
+                    for (var i = 0; i < leafs.length; i++) {
+                        var colName = colNames[leafs[i]];
+                        selectCol(colName);
+                    }
+                    if (previousSelection.sort().toString() === selectedColNames.sort().toString()) {
                         unselectAll();
-                        var leafs = d.index.split(' ');
-                        for (var i = 0; i < leafs.length; i++) {
-                            var colName = colNames[leafs[i]];
-                            selectCol(colName);
-                        }
-                        if (previousSelection.sort().toString() === selectedColNames.sort().toString()) {
-                            unselectAll();
-                        }
-                    })
+                    }
+                })
                     .on('mouseover', function(d) {
                         tip.show('Height: ' + d.height);
                     })
@@ -1036,35 +1053,35 @@ window.smartRApp.directive('heatmapPlot', [
                     .attr('transform', function(d) {
                         return 'translate(' + (width + spacing + h - d.y) + ',' + d.x + ')';
                     }).on('click', function(d) {
-                        var leafs = d.index.split(' ');
-                        var genes = [];
-                        leafs.forEach(function(leaf) {
-                            var rowName = rowNames[leaf];
-                            var split = rowName.split("--");
-                            split.shift();
-                            genes = genes.concat(split);
-                        });
+                    var leafs = d.index.split(' ');
+                    var genes = [];
+                    leafs.forEach(function(leaf) {
+                        var rowName = rowNames[leaf];
+                        var split = rowName.split("--");
+                        split.shift();
+                        genes = genes.concat(split);
+                    });
 
-                        var request = $.ajax({
-                            url: pageInfo.basePath + '/SmartR/biocompendium',
-                            type: 'POST',
-                            timeout: 5000,
-                            data: {
-                                genes: genes.join(' ')
-                            }
-                        });
+                    var request = $.ajax({
+                        url: pageInfo.basePath + '/SmartR/biocompendium',
+                        type: 'POST',
+                        timeout: 5000,
+                        data: {
+                            genes: genes.join(' ')
+                        }
+                    });
 
-                        request.then(
-                            function(response) {
-                                var sessionID = response.match(/tmp_\d+/)[0];
-                                var url = 'http://biocompendium.embl.de/' +
-                                    'cgi-bin/biocompendium.cgi?section=pathway&pos=0&background=whole_genome&session=' +
-                                    sessionID + '&list=gene_list_1__1&list_size=15&org=human';
-                                window.open(url);
-                            },
-                            function(response) { alert("Error:", response); }
-                        );
-                    })
+                    request.then(
+                        function(response) {
+                            var sessionID = response.match(/tmp_\d+/)[0];
+                            var url = 'http://biocompendium.embl.de/' +
+                                'cgi-bin/biocompendium.cgi?section=pathway&pos=0&background=whole_genome&session=' +
+                                sessionID + '&list=gene_list_1__1&list_size=15&org=human';
+                            window.open(url);
+                        },
+                        function(response) { alert("Error:", response); }
+                    );
+                })
                     .on('mouseover', function(d) {
                         tip.show('Height: ' + d.height);
                     })
@@ -1181,4 +1198,6 @@ window.smartRApp.directive('heatmapPlot', [
             init();
 
         }
+
     }]);
+

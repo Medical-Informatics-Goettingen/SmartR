@@ -359,23 +359,7 @@ mergeDuplicates <- function(df) {
 
 # nodeID has usually this format: 'X123_highDimensional_n0_s1)
 # this method pretifies it with the actual node label like this: '123_BreastCancer'
-idToNodeLabel <- function(ids, ontologyTerms) {
-  # extract patientID (123)
-  patientIDs <- sub("_.+_n[0-9]+_s[1-2]{1}$", "", ids, perl=TRUE) # remove the _highDimensional_n0_s1
-  patientIDs <- sub("^X", "", patientIDs, perl=TRUE) # remove the X
-  # extract subset (s1)
-  subsets <- substring(ids, first=nchar(ids)-1, last=nchar(ids))
-  # extract node label (Breast)
-  nodes <- sub("^.+?_", "", ids, perl=TRUE) # remove the X123_
-  nodes <- as.vector(substring(nodes, first=1, last=nchar(nodes)-3)) # remove the _s1
-  fullNames <- as.vector(sapply(nodes, function(node) return(ontologyTerms[[node]]$fullName)))
-  split <- strsplit2(fullNames, "\\\\") 
-  nodeLabels <- apply(split, 1, function(row) paste(tail(row[row != ""], n=2), collapse="//"))
-  # put everything together (123, Breast, s1)
-  paste(patientIDs, nodeLabels, subsets, sep="_")
-}
-
-
+addStats
 ## Checking if a variable called preprocessed exists in R
 ## workspace, else loaded_variables is used to create data frame df.
 ## Column names in data frame get modified by replacing matrix id
