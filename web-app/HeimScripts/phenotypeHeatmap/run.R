@@ -3,6 +3,9 @@ library(limma)
 library(jsonlite)
 library(gtools)
 
+## Packages tidyr and DBI must be installed!
+library(tidyr)
+
 
 if (!exists("remoteScriptDir")) {  #  Needed for unit-tests
     remoteScriptDir <- "web-app/HeimScripts"
@@ -58,7 +61,7 @@ buildLowDim <- function(ld.list) {
   if(is.null(ld.list)){
     return(NULL)
   }
-  
+   
   ld.names <- unlist(names(ld.list))
   ld.namesWOSubset <- sub("_s[1-2]{1}$", "", ld.names)
   ld.fullNames <- sapply(ld.namesWOSubset, function(el) fetch_params$ontologyTerms[[el]]$fullName)
@@ -78,6 +81,15 @@ buildLowDim <- function(ld.list) {
 
   for (i in 1:length(ld.names)) {
       ld.var <- ld.list[[i]]
+      
+      ## Modified behavior for dragged folders:
+      if (length(ld.var) > 2) {
+      	ld.var <- unite(ld.var, collapsed, 2:length(ld.var), sep="", remove=TRUE)
+      	tmp.folderName <- strsplit2(ld.rownames, "//")[i,2]
+      	ld.var[2][ld.var[2] != ""] <- tmp.folderName
+      }
+      
+      
       for (j in 1:nrow(ld.var)) {
           ld.patientID <- ld.var[j, 1]
           ld.value <- ld.var[j, 2]
@@ -237,15 +249,6 @@ main <- function(max_rows = 100, sorting = "patientnumbers", ranking = "mean", s
 		"ZSCORE" = (VALUE.vec - mean(VALUE.vec)) / sd(VALUE.vec),
 		"SUBSET" = 1
 	)
-    
-##    write.table(
-##        fields,
-##        "phenotypeHeatmap_orig_values.tsv",
-##        sep = "\t",
-##        na = "",
-##        row.names = FALSE,
-##        col.names = TRUE
-##    )
     
    write.table(fields,
                 "phenotypeHeatmap_data.tsv",

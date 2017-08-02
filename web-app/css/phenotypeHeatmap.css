@@ -116,12 +116,59 @@
 .heim-choicegroup-mi-goe {
 	display: inline;
 	border: none;
+	margin-bottom: 5px;
+}
+
+.heim-choicegroup-mi-goe div {
+	display: inline;
+}
+
+.heim-choicegroup-mi-goe div input {
+	padding-left: 5px;
+	padding-right: 5px;
+	padding-bottom: 2px;
+	padding-top: 2px;
+	vertical-align: bottom;
+}
+
+@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+    input {
+		color: black;
+		border-style: solid;
+		border-width: 1px;
+		padding: 1px;
+	}
+	
+	.heim-choicegroup-mi-goe div input {
+		vertical-align: super;
+	}
+	
+	input:active {
+		transform: translateY(1px);
+	}
+}
+
+.sr-procentualBinned-mi-goe {
+	padding-left: 5px;
+	padding-right: 5px;
+	padding-bottom: 2px;
+	padding-top: 2px;
+	vertical-align: bottom;
+	margin-right: 2px;
 }
 
 .heim-input-field .heim-choicegroup-mi-goe label {
 	display: inline-table;
 	padding-left: 10px;
 	width: 0em;
+}
+
+.heim-input-field.heim-dropzone {
+	width: 450px;
+}
+
+.heim-input-field label {
+	vertical-align: super;
 }
 
 .sliderContainerMiGoe {
@@ -144,15 +191,14 @@
 	display: inline;
 }
 
-.sr-procentualBinned-mi-goe {
-	vertical-align: middle;
-	margin-right: 2px;
-}
-
 .choiceConceptBoxSliderMiGoe .ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus {
 	background: #f4fcf3 url(images/ui-bg_highlight-hard_60_f4fcf3_1x100.png) 50% 50% repeat-x;
 }
 
 .noSliderContainerMiGoe {
-	margin-bottom: 25.2px;
+	margin-bottom: 28px;
+}
+
+.buttonInUsage {
+	background-color: #615BD1;
 }
