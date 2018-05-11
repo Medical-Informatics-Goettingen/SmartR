@@ -17,31 +17,21 @@ window.smartRApp.directive('betadiversity', [
             },
             templateUrl: $rootScope.smartRPath +  '/js/smartR/_angular/templates/betadiversity.html',
             link: function (scope, element) {
-                console.log("0")
-                var vizDiv = element.children()[0];
-                console.log("0.1")
+                var vizDiv = element.children()[1];
                 /**
                  * Watch data model (which is only changed by ajax calls when we want to (re)draw everything)
                  */
                 scope.$watch('data', function () {
-                    console.log("1")
                     $(vizDiv).empty();
-                    console.log("2")
                     if (! $.isEmptyObject(scope.data)) {
-                        console.log("3")
                         createBetaDiv(scope, vizDiv);
-                    }
-                    else {
-                        console.log("ELSE")
                     }
                 });
             }
         };
 
         function createBetaDiv(scope, root) {
-//            var scope = scope.data;
 
-            console.log(scope)
             scope.params = [];
             scope.params.geneCardsAllowed = false;
             scope.params.max_row = 100;
@@ -54,7 +44,6 @@ window.smartRApp.directive('betadiversity', [
             var fields = scope.data.fields;
             var extraFields = scope.data.extraFields;
             var features = scope.data.features.constructor === Array ? scope.data.features : [];
-            console.log(features)
 
             var colNames = scope.data.colNames; // unique
             var rowNames = scope.data.rowNames; // unique
@@ -152,6 +141,7 @@ window.smartRApp.directive('betadiversity', [
 
             var rankingSelect = smartRUtils.getElementWithoutEventListeners('sr-heatmap-ranking-select');
             rankingSelect.addEventListener('change', function() { setRanking(rankingSelect.value); });
+
             while (rankingSelect.firstChild) {
                 rankingSelect.removeChild(rankingSelect.firstChild);
             }
@@ -177,6 +167,7 @@ window.smartRApp.directive('betadiversity', [
                 };
 //                console.log(histogramScale)
             }
+
             setScales();
 
             function getInternalSortValue(value) {
@@ -240,6 +231,7 @@ window.smartRApp.directive('betadiversity', [
                 var square = squareItems.selectAll('.square')
                     .data(fields);
                 console.log(colNames);
+                console.log(rowNames);
                 square.enter()
                     .append('rect')
                     .attr('class', function(d) {
@@ -273,8 +265,8 @@ window.smartRApp.directive('betadiversity', [
 
                 square.transition()
                     .duration(animationCheck.checked ? ANIMATION_DURATION : 0)
-                    .attr('x', function(d) { return colNames.indexOf(d.COLNAME) * gridFieldWidth; })
-                    .attr('y', function(d) { return rowNames.indexOf(d.ROWNAME) * gridFieldHeight; })
+                    .attr('x', function(d) { return colNames.indexOf(""+d.COLNAME) * gridFieldWidth; })
+                    .attr('y', function(d) { return rowNames.indexOf(""+d.ROWNAME) * gridFieldHeight; })
                     .attr('width', gridFieldWidth)
                     .attr('height', gridFieldHeight);
 
@@ -572,7 +564,7 @@ window.smartRApp.directive('betadiversity', [
                     .duration(animationCheck.checked ? ANIMATION_DURATION : 0)
                     .attr('width', function(d) { return histogramScale(d[ranking]); })
                     .attr('height', gridFieldHeight)
-                    .attr('y', function(d) { return gridFieldHeight * rowNames.indexOf(d.ROWNAME); })
+                    .attr('y', function(d) { return gridFieldHeight * rowNames.indexOf(""+d.ROWNAME); })
                     .attr('x', function(d) { return -histogramScale(d[ranking]); })
                     .style('fill', function(d) { return d[ranking] > 0 ? '#990000' : 'steelblue'; });
 
@@ -707,7 +699,7 @@ window.smartRApp.directive('betadiversity', [
                 var HEADER = ['ROWNAME'];
                 for (var stat in statistics[0]) { // collect existing statistics headers
                     if (statistics[0].hasOwnProperty(stat) && stat !== 'ROWNAME') {
-                        HEADER.push(stat);
+			console.log("stat: " + stat);
                     }
                 }
                 var table = d3.select(root).append('table')
@@ -727,7 +719,7 @@ window.smartRApp.directive('betadiversity', [
                 var probeIDs = [];
                 var entities = [];
                 rowNames.forEach(function(rowName) {
-                    console.log(rowName)
+                    console.log(rowName);
                     probeIDs.push(rowName);//.match(/.+(?=--)/)[0]);
                     entities.push(rowName);//.match(/.+?--(.*)/)[1]);
                 });

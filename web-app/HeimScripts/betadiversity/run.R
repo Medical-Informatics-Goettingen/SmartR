@@ -3,18 +3,25 @@ library(vegan)
 library(ggplot2)
 library(pheatmap)
 library(RColorBrewer)
+library(reshape)
 
 main <- function(inputmode = "bray", selectedPatientIDs = integer()) {
-    save(loaded_variables,file="C:/tmp/loaded_variables.Rda")
-    inputmode='bray'
+#    save(loaded_variables,file="C:/tmp/loaded_variables.Rda")
+#    inputmode='bray'
 
-
+    fields <- 0
+    features <- 0
+    extraFields <- 0
+    colNames <- 0
+    rowNames <- 0
+    fields_top25 <- 0
+    annotations <- list()
 
     SoNoSu.labels <- names(loaded_variables)
     SoNoSu.labels <- sort(SoNoSu.labels) # for determinism
     matches <- grepl("s1", SoNoSu.labels)
     loaded_variables_s1 = loaded_variables[SoNoSu.labels[matches]]
-    matches <- grepl("s1", SoNoSu.labels)
+    matches <- grepl("s2", SoNoSu.labels)
     loaded_variables_s2 = loaded_variables[SoNoSu.labels[matches]]
 
     lv <- list()
@@ -163,25 +170,20 @@ main <- function(inputmode = "bray", selectedPatientIDs = integer()) {
                 heatmap <- rbind(heatmap,Dist)
                 heatmap_top25 <- rbind(heatmap_top25,as.data.frame(Microbiom_table_top25))
                 extraFields = rbind(extraFields,ef)
-            }
+            }	    
         }
     }
 
-
     colnames(extraFields) = c("PATIENTID","COLNAME","ROWNAME","VALUE","SUBSET","ZSCORE")
     Metadaten_new$mode = inputmode
-    # Metadaten_new = list()
     Metadaten_new$fields = heatmap
     Metadaten_new$features = annotations
     Metadaten_new$extraFields = extraFields
     Metadaten_new$colNames = patients
     Metadaten_new$rowNames = patients
     Metadaten_new$fields_top25 = heatmap_top25
-    jsn <- toJSON(Metadaten_new,pretty=TRUE)
-    write(jsn, file = "C:/dev/htdocs/BetaDiv/betadiv.json")
 
-
-    toJSON(jsn,pretty = TRUE)
+    toJSON(Metadaten_new,pretty = TRUE)
 
 
 }
