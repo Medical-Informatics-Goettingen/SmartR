@@ -18,7 +18,7 @@
                          type="LD-categorical"
                          min="0"
                          max="-1"
-                         label="(optional) Categorical Variables"
+                         label="Categorical Variables"
                          tooltip="Select an arbitrary amount of categorical variables from the tree to annotate the numerical datapoints.">
             </concept-box>
             <br/>
@@ -34,7 +34,7 @@
             <br/>
             <br/>
             <div class="heim-input-field sr-input-area">
-                <h2>Alpha Diversity Mode:</h2>
+                <h2>Beta Diversity Mode:</h2>
                 <fieldset class="heim-radiogroup">
                     <label>
                         <input type="radio"
@@ -44,27 +44,57 @@
                     <label>
                         <input type="radio"
                                ng-model="runAnalysis.params.inputmode"
-                               value="simpson" > Simpson-Index
+                               value="euclidean" > Euclidean-Index
                     </label>
                     <label>
                         <input type="radio"
                                ng-model="runAnalysis.params.inputmode"
-                               value="invsimpson" > Inverse-Simpson-Index
+                               value="manhattan" > Manhattan-Index
                     </label>
                     <label>
                         <input type="radio"
                                ng-model="runAnalysis.params.inputmode"
-                               value="chao1" > Chao1-Estimator
+                               value="gower" > Gower-Index
                     </label>
                     <label>
                         <input type="radio"
                                ng-model="runAnalysis.params.inputmode"
-                               value="obs" > Observed Species
+                               value="canberra" > Canberra-Index
                     </label>
                     <label>
                         <input type="radio"
                                ng-model="runAnalysis.params.inputmode"
-                               value="ACE" > ACE-Estimator
+                               value="kulczynski" > Kulczynski-Index
+                    </label>
+                    <label>
+                        <input type="radio"
+                               ng-model="runAnalysis.params.inputmode"
+                               value="morisita" > Morisita-Index
+                    </label>
+                    <label>
+                        <input type="radio"
+                               ng-model="runAnalysis.params.inputmode"
+                               value="horn" > Horn-Index
+                    </label>
+                    <label>
+                        <input type="radio"
+                               ng-model="runAnalysis.params.inputmode"
+                               value="binomial" > Binomial-Index
+                    </label>
+                    <label>
+                        <input type="radio"
+                               ng-model="runAnalysis.params.inputmode"
+                               value="jaccard" > Jaccard-Index
+                    </label>
+                    <label>
+                        <input type="radio"
+                               ng-model="runAnalysis.params.inputmode"
+                               value="mountford" > Mountford-Index
+                    </label>
+                    <label>
+                        <input type="radio"
+                               ng-model="runAnalysis.params.inputmode"
+                               value="raup" > Raup–Crick-Index
                     </label>
                 </fieldset>
             </div>

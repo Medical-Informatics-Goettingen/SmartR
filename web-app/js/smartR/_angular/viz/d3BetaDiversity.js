@@ -22,8 +22,10 @@ window.smartRApp.directive('betadiversity', [
                  * Watch data model (which is only changed by ajax calls when we want to (re)draw everything)
                  */
                 scope.$watch('data', function () {
+                    scope.showControls = false;
                     $(vizDiv).empty();
                     if (! $.isEmptyObject(scope.data)) {
+                        scope.showControls = true;
                         createBetaDiv(scope, vizDiv);
                     }
                 });
@@ -533,7 +535,7 @@ window.smartRApp.directive('betadiversity', [
                     .duration(animationCheck.checked ? ANIMATION_DURATION : 0)
                     .style('font-size', gridFieldHeight + 'px')
                     .attr('x', width + gridFieldWidth + 7)
-                    .attr('y', function(d) { return rowNames.indexOf(d) * gridFieldHeight + 0.5 * gridFieldHeight; });
+                    .attr('y', function(d) { return rowNames.indexOf(""+d) * gridFieldHeight + 0.5 * gridFieldHeight; });
 
                 var bar = barItems.selectAll('.bar')
                     .data(statistics, function(d) { return d.ROWNAME; });
@@ -599,8 +601,8 @@ window.smartRApp.directive('betadiversity', [
 
                 extraSquare.transition()
                     .duration(animationCheck.checked ? ANIMATION_DURATION : 0)
-                    .attr('x', function(d) { return colNames.indexOf(d.COLNAME) * gridFieldWidth; })
-                    .attr('y', function(d) { return featurePosY - features.indexOf(d.ROWNAME) * gridFieldHeight; })
+                    .attr('x', function(d) { return colNames.indexOf(""+d.COLNAME) * gridFieldWidth; })
+                    .attr('y', function(d) { return featurePosY - features.indexOf(""+d.ROWNAME) * gridFieldHeight; })
                     .attr('width', gridFieldWidth)
                     .attr('height', gridFieldHeight);
 
@@ -618,7 +620,7 @@ window.smartRApp.directive('betadiversity', [
                     .duration(animationCheck.checked ? ANIMATION_DURATION : 0)
                     .style('font-size', gridFieldHeight + 'px')
                     .attr('x', width + gridFieldWidth + 7)
-                    .attr('y', function(d) { return featurePosY - features.indexOf(d) * gridFieldHeight + gridFieldHeight / 2; });
+                    .attr('y', function(d) { return featurePosY - features.indexOf(""+d) * gridFieldHeight + gridFieldHeight / 2; });
 
                 var featureSortText = featureItems.selectAll('.featureSortText')
                     .data(features);
@@ -635,7 +637,7 @@ window.smartRApp.directive('betadiversity', [
                     .style('font-size', gridFieldHeight + 'px')
                     .attr('transform', function(d) {
                         return 'translate(' + (width + 2 + 0.5 * gridFieldWidth) + ',0)' + 'translate(0,' +
-                            (featurePosY - features.indexOf(d) * gridFieldHeight + gridFieldHeight / 2) + ')rotate(-90)';
+                            (featurePosY - features.indexOf(""+d) * gridFieldHeight + gridFieldHeight / 2) + ')rotate(-90)';
                     });
 
                 var featureSortBox = featureItems.selectAll('.featureSortBox')
@@ -680,7 +682,7 @@ window.smartRApp.directive('betadiversity', [
                             var className = sortedByBoxes.attr('class');
                             var sortedByIdx = parseInt(className.match(/idx-(\d+)/)[1]);
                             d3.selectAll('.colSortBox').classed('sortedBy', false);
-                            d3.selectAll('.colSortBox').filter('.idx-' + sortValues.indexOf(sortedByIdx)).classed('sortedBy', true);
+                            d3.selectAll('.colSortBox').filter('.idx-' + sortValues.indexOf(""+sortedByIdx)).classed('sortedBy', true);
                         }
                     });
 
@@ -688,7 +690,7 @@ window.smartRApp.directive('betadiversity', [
                 featureSortBox.transition()
                     .duration(animationCheck.checked ? ANIMATION_DURATION : 0)
                     .attr('x', width + 2)
-                    .attr('y', function(d) { return featurePosY - features.indexOf(d) * gridFieldHeight; })
+                    .attr('y', function(d) { return featurePosY - features.indexOf(""+d) * gridFieldHeight; })
                     .attr('width', gridFieldWidth)
                     .attr('height', gridFieldHeight);
             }
@@ -699,7 +701,7 @@ window.smartRApp.directive('betadiversity', [
                 var HEADER = ['ROWNAME'];
                 for (var stat in statistics[0]) { // collect existing statistics headers
                     if (statistics[0].hasOwnProperty(stat) && stat !== 'ROWNAME') {
-			console.log("stat: " + stat);
+			HEADER.push(stat);
                     }
                 }
                 var table = d3.select(root).append('table')
