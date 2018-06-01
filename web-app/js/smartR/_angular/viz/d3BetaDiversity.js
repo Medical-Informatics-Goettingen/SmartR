@@ -37,10 +37,10 @@ window.smartRApp.directive('betadiversity', [
             scope.params = [];
             scope.params.geneCardsAllowed = false;
             scope.params.max_row = 100;
-            scope.params.ranking = "zscore";
+            scope.params.ranking = "mean";
             scope.params.sorting = "nodes";
             scope.data.ranking = [];
-            scope.data.ranking[0] = "zscore";
+            scope.data.ranking[0] = "mean";
             var ANIMATION_DURATION = 1500;
 
             var fields = scope.data.fields;
@@ -64,8 +64,8 @@ window.smartRApp.directive('betadiversity', [
             var originalRowNames = rowNames.slice();
 
             var ranking = scope.data.ranking[0].toUpperCase();
-            //var statistics = scope.data.allStatValues;
-            var statistics = scope.data.fields;
+            var statistics = scope.data.allStatValues;
+            //var statistics = scope.data.fields;
 
             var geneCardsAllowed = JSON.parse(scope.params.geneCardsAllowed);
 
@@ -232,8 +232,6 @@ window.smartRApp.directive('betadiversity', [
                 updateHeatmapTable();
                 var square = squareItems.selectAll('.square')
                     .data(fields);
-                console.log(colNames);
-                console.log(rowNames);
                 square.enter()
                     .append('rect')
                     .attr('class', function(d) {
@@ -500,7 +498,7 @@ window.smartRApp.directive('betadiversity', [
                     .duration(animationCheck.checked ? ANIMATION_DURATION : 0)
                     .style('font-size', gridFieldHeight + 'px')
                     .attr('transform', function(d) {
-                        return 'translate(' + (colNames.indexOf(d) * gridFieldWidth) + ',0)' +
+                        return 'translate(' + (colNames.indexOf(""+d) * gridFieldWidth) + ',0)' +
                             'translate(' + (gridFieldWidth / 2) + ',' + (-4 - gridFieldHeight * 2) + ')rotate(-45)';
                     });
 
@@ -721,7 +719,6 @@ window.smartRApp.directive('betadiversity', [
                 var probeIDs = [];
                 var entities = [];
                 rowNames.forEach(function(rowName) {
-                    console.log(rowName);
                     probeIDs.push(rowName);//.match(/.+(?=--)/)[0]);
                     entities.push(rowName);//.match(/.+?--(.*)/)[1]);
                 });
@@ -731,7 +728,7 @@ window.smartRApp.directive('betadiversity', [
                     .enter()
                     .append('tr');
 
-                rows.selectAll('td')
+                rows.selectAll('td')  
                     .data(function(d, i) {
                         return HEADER.map(function(column) {
                             return {column: column, value: statistics[i][column]};
@@ -793,16 +790,18 @@ window.smartRApp.directive('betadiversity', [
                     removeColDendrogram();
                     createColDendrogram();
                 }
+                /*
                 if (rowDendrogramVisible) {
                     removeRowDendrogram();
                     createRowDendrogram();
                 }
+                */
             }
 
             function selectCol(colName) {
                 var colSquares = d3.selectAll('.square.colname-' + smartRUtils.makeSafeForCSS(colName));
                 if (colSquares.classed('selected')) {
-                    var index = selectedColNames.indexOf(colName);
+                    var index = selectedColNames.indexOf(""+colName);
                     selectedColNames.splice(index, 1);
                     colSquares
                         .classed('selected', false);
@@ -825,44 +824,20 @@ window.smartRApp.directive('betadiversity', [
 
             var colorScale;
             function updateColors(schema) {
-                var redGreenScale = d3.scale.quantile()
-                    .domain([0, 1])
-                    .range(function() {
-                        var colorSet = [];
-                        var NUM = 100;
-                        var i = NUM;
-                        while (i--) {
-                            colorSet.push(d3.rgb((255 * i) / NUM, 0, 0));
-                        }
-                        i = NUM;
-                        while (i--) {
-                            colorSet.push(d3.rgb(0, (255 * (NUM - i)) / NUM, 0));
-                        }
-                        return colorSet.reverse();
-                    }());
+                var redGreenScale = d3.scale.linear()
+                    .domain([0, maxZScore])
+                    .range(['#ff0000', '#00ff00']);
 
-                var redBlueScale = d3.scale.quantile()
-                    .domain([0, 1])
-                    .range(function() {
-                        var colorSet = [];
-                        var NUM = 100;
-                        var i = NUM;
-                        while (i--) {
-                            colorSet.push(d3.rgb((255 * i) / NUM, 0, 0));
-                        }
-                        i = NUM;
-                        while (i--) {
-                            colorSet.push(d3.rgb(0, 0, (255 * (NUM - i)) / NUM));
-                        }
-                        return colorSet.reverse();
-                    }());
+                var redBlueScale = d3.scale.linear()
+                    .domain([0, maxZScore])
+                    .range(['#ff0000', '#0000ff']);
 
                 var blueScale = d3.scale.linear()
-                    .domain([0, 1])
+                    .domain([0, maxZScore])
                     .range(['#0000ff', '#e5e5ff']);
 
                 var greenScale = d3.scale.linear()
-                    .domain([0, 1])
+                    .domain([0, maxZScore])
                     .range(['#00ff00', '#e5ffe5']);
 
                 var colorSchemas = {
@@ -878,14 +853,14 @@ window.smartRApp.directive('betadiversity', [
                     .transition()
                     .duration(animationCheck.checked ? ANIMATION_DURATION : 0)
                     .attr('fill', function(d) {
-                        return colorScale(1 / (1 + Math.pow(Math.E, -d.ZSCORE)));
+                        return colorScale(d.ZSCORE);
                     });
 
                 d3.selectAll('.legendColor')
                     .transition()
                     .duration(animationCheck.checked ? ANIMATION_DURATION : 0)
                     .attr('fill', function(d) {
-                        return colorScale(1 / (1 + Math.pow(Math.E, -d)));
+                        return colorScale(d);
                     });
 
                 var featureColorSetBinary = ['#FF8000', '#FFFF00'];
@@ -1130,19 +1105,19 @@ window.smartRApp.directive('betadiversity', [
 
             function transformClusterOrderWRTInitialOrder(clusterOrder, initialOrder) {
                 return clusterOrder.map(function(d) {
-                    return initialOrder.indexOf(d);
+                    return initialOrder.indexOf(""+d);
                 });
             }
 
             function getInitialRowOrder() {
                 return rowNames.map(function(rowName) {
-                    return originalRowNames.indexOf(rowName);
+                    return originalRowNames.indexOf(""+rowName);
                 });
             }
 
             function getInitialColOrder() {
                 return colNames.map(function(colName) {
-                    return originalColNames.indexOf(colName);
+                    return originalColNames.indexOf(""+colName);
                 });
             }
 
@@ -1158,7 +1133,7 @@ window.smartRApp.directive('betadiversity', [
                 if (document.getElementById('sr-heatmap-row-check').checked && rowNames.length > 0) {
                     rowDendrogram = JSON.parse(clusterData[3]);
                     updateRowOrder(transformClusterOrderWRTInitialOrder(clusterData[1], getInitialRowOrder()), false);
-                    createRowDendrogram(rowDendrogram);
+                    //createRowDendrogram(rowDendrogram);
                 } else {
                     removeRowDendrogram();
                 }

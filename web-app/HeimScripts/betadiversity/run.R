@@ -4,8 +4,27 @@ library(ggplot2)
 library(pheatmap)
 library(RColorBrewer)
 library(reshape)
+library(matrixStats)
+library(viper)
 
-main <- function(inputmode = "bray", selectedPatientIDs = integer()) {
+
+## Loading functions ##
+utils <- paste(remoteScriptDir, "/_shared_functions/Generic/utils.R", sep="")
+limmaUtils <- paste(remoteScriptDir, "/_shared_functions/GEX/limmaUtils.R", sep="")
+dataFrameUtils <- paste(remoteScriptDir, "/_shared_functions/GEX/DataFrameAndGEXmatrixUtils.R", sep="")
+heatmapUtils <- paste(remoteScriptDir, "/_shared_functions/Clustering/heatmapUtils.R", sep="")
+
+source(utils)
+source(limmaUtils)
+source(dataFrameUtils)
+source(heatmapUtils)
+#######################
+
+# unused remains from heatmap workflow
+markerTableJson <- ""
+SUBSET1REGEX <- ""
+
+main <- function(maxRows = 100, inputmode = "bray", selectedPatientIDs = integer(), ranking = "coef") {
 #    save(loaded_variables,file="C:/tmp/loaded_variables.Rda")
 #    inputmode='bray'
 
@@ -141,7 +160,13 @@ main <- function(inputmode = "bray", selectedPatientIDs = integer()) {
 
 
             patients <- as.character(row.names(Microbiom_table_top25))
-            # Dist <- as.matrix(distance)
+            if (i == 1){
+                clusterData <- Dist
+            }
+            else{
+                clusterData <- rbind(clusterData,Dist)
+            }   
+            # Dist <- as.matrix(distance) 
             Dist <- melt(Dist)
             colnames(Dist) <- c("ROWNAME", "COLNAME", "VALUE")
             Dist["SUBSET"] <- i
@@ -160,7 +185,7 @@ main <- function(inputmode = "bray", selectedPatientIDs = integer()) {
             Metadaten_new$data[[n]]$annotation = annotations
             Metadaten_new$subset = c(Metadaten_new$subset,i)
             Metadaten_new$data[[n]]$Heatmap <- (Dist)#, cat_data)
-            ef = data.frame(patients,patients,patients,annotations,i,0)
+            ef = data.frame(patients,patients,annotations,annotations,i,0)#TODO: type still missing
             if (i == 1){
                 heatmap <- Dist
                 heatmap_top25 <- as.data.frame(Microbiom_table_top25)
@@ -174,14 +199,35 @@ main <- function(inputmode = "bray", selectedPatientIDs = integer()) {
         }
     }
 
+    statData = clusterData
+    rownames(statData) = patients
+    colnames(statData) = patients
+
+
+    for (i in 1:length(statData)) {
+        #calculating some random statistics -> TODO: what needed?
+        
+        ttest <- t.test(statData[,i])
+        stats = data.frame(patients[i],mean(statData[,i], na.rm = T),sd(statData[,i], na.rm = T),ttest$statistic,ttest$p.value)
+        colnames(stats) = c("ROWNAME","MEAN","SD","SIGNIFICANCE","PVAL")
+
+        if(i == 1){
+            Metadaten_new$allStatValues <- stats
+        } else {
+            Metadaten_new$allStatValues <- rbind(Metadaten_new$allStatValues, stats)
+        }
+    }
+
+
     colnames(extraFields) = c("PATIENTID","COLNAME","ROWNAME","VALUE","SUBSET","ZSCORE")
     Metadaten_new$mode = inputmode
     Metadaten_new$fields = heatmap
-    Metadaten_new$features = annotations
+    Metadaten_new$features = unique(annotations)
     Metadaten_new$extraFields = extraFields
     Metadaten_new$colNames = patients
     Metadaten_new$rowNames = patients
     Metadaten_new$fields_top25 = heatmap_top25
+    Metadaten_new <- addClusteringOutput(Metadaten_new, clusterData)
 
     toJSON(Metadaten_new,pretty = TRUE)
 
