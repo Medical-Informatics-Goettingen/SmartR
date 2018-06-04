@@ -699,7 +699,7 @@ window.smartRApp.directive('betadiversity', [
                 var HEADER = ['ROWNAME'];
                 for (var stat in statistics[0]) { // collect existing statistics headers
                     if (statistics[0].hasOwnProperty(stat) && stat !== 'ROWNAME') {
-			HEADER.push(stat);
+			            HEADER.push(stat);
                     }
                 }
                 var table = d3.select(root).append('table')
@@ -1105,19 +1105,19 @@ window.smartRApp.directive('betadiversity', [
 
             function transformClusterOrderWRTInitialOrder(clusterOrder, initialOrder) {
                 return clusterOrder.map(function(d) {
-                    return initialOrder.indexOf(""+d);
+                    return initialOrder.indexOf(d);
                 });
             }
 
             function getInitialRowOrder() {
                 return rowNames.map(function(rowName) {
-                    return originalRowNames.indexOf(""+rowName);
+                    return originalRowNames.indexOf(rowName);
                 });
             }
 
             function getInitialColOrder() {
                 return colNames.map(function(colName) {
-                    return originalColNames.indexOf(""+colName);
+                    return originalColNames.indexOf(colName);
                 });
             }
 

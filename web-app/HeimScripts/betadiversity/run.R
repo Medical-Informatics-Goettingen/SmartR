@@ -65,7 +65,7 @@ main <- function(maxRows = 100, inputmode = "bray", selectedPatientIDs = integer
         if (length(filtered.loaded_variables) > 0) {
             merged.df <- Reduce(function(...) merge(..., by='Row.Label', all=T), filtered.loaded_variables)
             merged.df <- merged.df[, colSums(is.na(merged.df)) != nrow(merged.df)] # remove NA columns
-            #
+            
             annotations <- list()
             if (!is.null(dim(merged.df[,-1]))){
                 annotations <- apply(merged.df[,-1], 1, function(row) {
@@ -229,7 +229,7 @@ main <- function(maxRows = 100, inputmode = "bray", selectedPatientIDs = integer
     Metadaten_new$fields_top25 = heatmap_top25
     Metadaten_new <- addClusteringOutput(Metadaten_new, clusterData)
 
-    toJSON(Metadaten_new,pretty = TRUE)
+    toJSON(Metadaten_new,pretty = TRUE,rownames = FALSE)
 
 
 }
