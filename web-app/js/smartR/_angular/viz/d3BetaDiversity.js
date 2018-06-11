@@ -879,7 +879,7 @@ window.smartRApp.directive('betadiversity', [
                                     return featureColorSetBinary[d.VALUE];
                                 case 'subset':
                                     return featureColorSetBinary[d.VALUE - 1];
-                                case 'numeric':
+                                case 'annotationsNumeric':
                                     var scale = d3.scale.quantile()
                                         .domain([0, 1])
                                         .range(featureColorSetSequential);

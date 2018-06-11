@@ -6,6 +6,7 @@ library(RColorBrewer)
 library(reshape)
 library(matrixStats)
 library(viper)
+library(limma)
 
 
 ## Loading functions ##
@@ -61,6 +62,7 @@ main <- function(maxRows = 100, inputmode = "bray", selectedPatientIDs = integer
             merged.df_dp <- merged.df_dp[, colSums(is.na(merged.df_dp)) != nrow(merged.df_dp)] # remove NA columns
         }
 
+        # annotations part unused
         filtered.loaded_variables <- get.loaded_variables.by.source("annotations", loaded_variables_s)
         if (length(filtered.loaded_variables) > 0) {
             merged.df <- Reduce(function(...) merge(..., by='Row.Label', all=T), filtered.loaded_variables)
@@ -218,20 +220,107 @@ main <- function(maxRows = 100, inputmode = "bray", selectedPatientIDs = integer
         }
     }
 
+    extraFields <- buildExtraFieldsLowDimBetaDiv(filtered.loaded_variables,patients)
 
-    colnames(extraFields) = c("PATIENTID","COLNAME","ROWNAME","VALUE","SUBSET","ZSCORE")
+    extraFields$COLNAME <- extraFields$PATIENTID
+
     Metadaten_new$mode = inputmode
     Metadaten_new$fields = heatmap
-    Metadaten_new$features = unique(annotations)
+#    Metadaten_new$features = unique(annotations)
+    Metadaten_new$features = unique(extraFields$ROWNAME)
     Metadaten_new$extraFields = extraFields
     Metadaten_new$colNames = patients
     Metadaten_new$rowNames = patients
     Metadaten_new$fields_top25 = heatmap_top25
     Metadaten_new <- addClusteringOutput(Metadaten_new, clusterData)
+    Metadaten_new$loaded_variables = filtered.loaded_variables
 
     toJSON(Metadaten_new,pretty = TRUE,rownames = FALSE)
 
 
 }
 
+
+buildExtraFieldsLowDimBetaDiv <- function(ld.list, colnames) {
+  if(is.null(ld.list)){
+    return(NULL)
+  }
+  
+  ld.names <- unlist(names(ld.list))
+  ld.namesWOSubset <- sub("_s[1-2]{1}$", "", ld.names)
+  ld.fullNames <- sapply(ld.namesWOSubset, function(el) fetch_params$ontologyTerms[[el]]$fullName)
+  ld.fullNames <- as.character(as.vector(ld.fullNames))
+  split <- strsplit2(ld.fullNames, "\\\\")
+  ld.rownames <- apply(split, 1, function(row) paste(tail(row[row != ""], n=2), collapse="//"))
+  ld.subsets <- as.integer(sub("^.*_s", "", ld.names))
+  ld.types <- sub("_.*$", "", ld.names)
+
+  hd.patientIDs <- colnames
+  hd.subsets <- as.integer(substr(colnames, nchar(colnames), nchar(colnames)))
+  split <- sub(".+?_", "", colnames)
+  hd.labels <- substr(split, 1, nchar(split) - 3)
+
+  ROWNAME.vec = character(length = 0)
+  PATIENTID.vec = character(length = 0)  
+  VALUE.vec = character(length = 0)
+  COLNAME.vec = character(length = 0)
+  TYPE.vec = character(length = 0)
+  SUBSET.vec = character(length = 0)
+  ZSCORE.vec = character(length = 0)
+
+  for (i in 1:length(ld.names)) {
+      ld.var <- ld.list[[i]]
+      for (j in 1:nrow(ld.var)) {
+          ld.patientID <- ld.var[j, 1]
+          ld.value <- ld.var[j, 2]
+          if (ld.value == "" || is.na(ld.value)) next
+          ld.type <- ld.types[i]
+          ld.subset <- ld.subsets[i]
+          ld.rowname.tmp <- ld.rownames[i]
+          ld.colname <- ld.patientID
+          if (! ld.colname %in% colnames) {
+              for (k in which(ld.patientID == hd.patientIDs & ld.subset == hd.subsets)) {
+                  ld.colname <- hd.patientIDs[k]
+                  ld.rowname <- paste("(matched by subject)", ld.rowname.tmp)
+                  ROWNAME.vec <- c(ROWNAME.vec, ld.rowname)
+                  PATIENTID.vec <- c(PATIENTID.vec, ld.patientID)
+                  VALUE.vec <- c(VALUE.vec, ld.value)
+                  COLNAME.vec <- c(COLNAME.vec, ld.colname)
+                  TYPE.vec <- c(TYPE.vec, ld.type)
+                  SUBSET.vec <- c(SUBSET.vec, ld.subset)
+              }
+          } else {
+              ld.rowname <- paste("(matched by sample)", ld.rowname.tmp)
+              ROWNAME.vec <- c(ROWNAME.vec, ld.rowname)
+              PATIENTID.vec <- c(PATIENTID.vec, ld.patientID)
+              VALUE.vec <- c(VALUE.vec, ld.value)
+              COLNAME.vec <- c(COLNAME.vec, ld.colname)
+              TYPE.vec <- c(TYPE.vec, ld.type)
+              SUBSET.vec <- c(SUBSET.vec, ld.subset)
+          }
+      }
+  }
+
+
+  res.df = data.frame(PATIENTID = as.integer(PATIENTID.vec),
+                      COLNAME = COLNAME.vec,
+                      ROWNAME = ROWNAME.vec,
+                      VALUE = VALUE.vec,
+                      ZSCORE = rep(NA, length(PATIENTID.vec)),
+                      TYPE = TYPE.vec,
+                      SUBSET = as.integer(SUBSET.vec), stringsAsFactors=FALSE)
+
+  # z-score computation must be executed on both cohorts, hence it happens after all the data are in res.df
+  rownames <- unique(res.df$ROWNAME)
+  for (rowname in rownames) {
+      sub.res.df <- res.df[res.df$ROWNAME == rowname, ]
+      if (sub.res.df[1,]$TYPE == "annotationsNumeric") {
+          values <- as.numeric(sub.res.df$VALUE)
+          ZSCORE.values <- (values - mean(values)) / sd(values)
+          res.df[res.df$ROWNAME == rowname, ]$ZSCORE <- ZSCORE.values
+      }
+  }
+
+  return(res.df)
+}
 
